@@ -1,4 +1,294 @@
 {
+  "Apple___Apple_scab": {
+    "display_name": "Apple Scab",
+    "description": "A fungal disease caused by Venturia inaequalis, producing olive-green to dark brown lesions on leaves and fruit.",
+    "severity": "moderate",
+    "symptoms": ["Olive-green velvety spots on leaves", "Dark scabby lesions on fruit", "Premature leaf drop"],
+    "recommended_actions": ["Remove and destroy fallen infected leaves", "Prune for better air circulation", "Apply locally approved fungicide if disease is progressing"],
+    "preventive_measures": ["Use resistant varieties", "Rake and destroy fallen leaves in autumn", "Ensure good air circulation in the canopy"],
+    "when_to_contact_expert": "Seek advice if fruit lesions are widespread or if the disease recurs annually despite management.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Apple___Black_rot": {
+    "display_name": "Apple Black Rot",
+    "description": "A fungal disease that causes leaf spots, fruit rot, and cankers on branches of apple trees.",
+    "severity": "high",
+    "symptoms": ["Purple-bordered leaf spots", "Brown expanding rot on fruit", "Sunken cankers on branches"],
+    "recommended_actions": ["Remove mummified fruit and cankered branches", "Improve sanitation around trees", "Consult local guidance on approved treatments"],
+    "preventive_measures": ["Remove dead wood and mummified fruit annually", "Maintain tree vigor through proper nutrition", "Prune to improve airflow"],
+    "when_to_contact_expert": "Contact an expert if cankers are found on main branches or fruit loss exceeds 10%.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Apple___Cedar_apple_rust": {
+    "display_name": "Apple Cedar Rust",
+    "description": "A fungal disease requiring both apple and cedar/juniper hosts, producing bright orange-yellow spots on apple leaves.",
+    "severity": "moderate",
+    "symptoms": ["Bright yellow-orange spots on upper leaf surface", "Small tube-like structures on leaf undersides", "Premature defoliation"],
+    "recommended_actions": ["Remove nearby cedar or juniper trees if practical", "Apply approved fungicide in spring during spore release", "Monitor leaf damage"],
+    "preventive_measures": ["Plant resistant apple varieties", "Remove alternate host plants within 300 meters if possible", "Maintain tree health"],
+    "when_to_contact_expert": "Seek advice if defoliation is severe or fruit quality is affected.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Apple___healthy": {
+    "display_name": "Healthy Apple Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect trees weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Blueberry___healthy": {
+    "display_name": "Healthy Blueberry Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain proper soil pH and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Ensure good drainage", "Mulch to maintain soil moisture"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Cherry_(including_sour)___Powdery_mildew": {
+    "display_name": "Cherry Powdery Mildew",
+    "description": "A fungal disease that forms a white powdery coating on cherry leaves, shoots, and sometimes fruit.",
+    "severity": "moderate",
+    "symptoms": ["White powdery coating on leaves", "Leaf curling and distortion", "Stunted new growth"],
+    "recommended_actions": ["Remove heavily infected shoots", "Improve air circulation through pruning", "Apply approved fungicide if spreading"],
+    "preventive_measures": ["Avoid excessive nitrogen fertilization", "Ensure adequate spacing between trees", "Water at the base rather than overhead"],
+    "when_to_contact_expert": "Seek advice if the infection reaches fruit or spreads to most of the canopy.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Cherry_(including_sour)___healthy": {
+    "display_name": "Healthy Cherry Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect trees weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+    "display_name": "Corn Gray Leaf Spot",
+    "description": "A fungal disease causing rectangular gray to tan lesions on corn leaves, reducing photosynthesis and yield.",
+    "severity": "moderate",
+    "symptoms": ["Rectangular gray-tan leaf lesions", "Lesions run parallel to leaf veins", "Lower leaves affected first"],
+    "recommended_actions": ["Scout field to assess severity", "Consider foliar fungicide if disease is progressing before tasseling", "Plan crop rotation for next season"],
+    "preventive_measures": ["Rotate with non-host crops", "Use resistant hybrids", "Till crop residue to reduce inoculum"],
+    "when_to_contact_expert": "Contact an officer if lesions reach the ear leaf or cover more than 50% of leaf area.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Corn_(maize)___Common_rust_": {
+    "display_name": "Corn Common Rust",
+    "description": "A fungal disease producing small reddish-brown pustules on both leaf surfaces of corn.",
+    "severity": "moderate",
+    "symptoms": ["Small circular to elongated rust-brown pustules", "Pustules on both leaf surfaces", "Chlorotic halos around pustules"],
+    "recommended_actions": ["Monitor disease progression", "Apply foliar fungicide if infection is heavy and plants are pre-tassel", "Use resistant hybrids in future plantings"],
+    "preventive_measures": ["Plant resistant varieties", "Ensure adequate plant nutrition", "Avoid late planting"],
+    "when_to_contact_expert": "Seek advice if pustules are dense and spreading rapidly before grain fill.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Corn_(maize)___Northern_Leaf_Blight": {
+    "display_name": "Corn Northern Leaf Blight",
+    "description": "A fungal disease producing large cigar-shaped gray-green to tan lesions on corn leaves.",
+    "severity": "high",
+    "symptoms": ["Large cigar-shaped gray-green lesions", "Lesions 2.5–15 cm long", "Can coalesce and kill entire leaves"],
+    "recommended_actions": ["Apply fungicide if lesions appear before or during tasseling", "Plan crop rotation", "Remove crop debris after harvest"],
+    "preventive_measures": ["Use resistant hybrids", "Rotate crops", "Manage crop residue"],
+    "when_to_contact_expert": "Contact an agricultural officer if lesions appear on upper leaves before tasseling.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Corn_(maize)___healthy": {
+    "display_name": "Healthy Corn Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced fertilization"],
+    "preventive_measures": ["Scout fields regularly", "Ensure proper plant spacing", "Manage crop residue"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Grape___Black_rot": {
+    "display_name": "Grape Black Rot",
+    "description": "A fungal disease causing brown leaf spots and shriveled, blackened fruit mummies on grapevines.",
+    "severity": "high",
+    "symptoms": ["Tan to brown circular leaf spots with dark borders", "Black pycnidia in leaf lesions", "Shriveled black fruit mummies"],
+    "recommended_actions": ["Remove mummified fruit and infected plant material", "Apply approved fungicide during critical growth stages", "Improve canopy management"],
+    "preventive_measures": ["Remove mummies and diseased wood during dormant pruning", "Improve air circulation in canopy", "Use resistant varieties"],
+    "when_to_contact_expert": "Contact an expert if fruit infection exceeds 5% despite management.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Grape___Esca_(Black_Measles)": {
+    "display_name": "Grape Esca (Black Measles)",
+    "description": "A complex fungal disease causing tiger-stripe leaf patterns and dark spots on grape berries.",
+    "severity": "high",
+    "symptoms": ["Tiger-stripe interveinal discoloration on leaves", "Dark spots on berries", "Sudden vine dieback in severe cases"],
+    "recommended_actions": ["Remove severely affected vines or cordons", "Avoid large pruning wounds", "Monitor neighboring vines"],
+    "preventive_measures": ["Make clean pruning cuts", "Protect wounds with pruning paint", "Avoid excessive vine stress"],
+    "when_to_contact_expert": "Contact an expert immediately if vines show sudden wilt or collapse.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+    "display_name": "Grape Leaf Blight",
+    "description": "A fungal leaf disease causing angular brown spots that can lead to premature defoliation of grapevines.",
+    "severity": "moderate",
+    "symptoms": ["Angular brown leaf spots", "Spots may have yellow margins", "Premature leaf drop"],
+    "recommended_actions": ["Remove severely affected leaves", "Apply approved fungicide if spreading", "Improve canopy airflow"],
+    "preventive_measures": ["Maintain proper vine spacing", "Ensure good air circulation", "Remove leaf litter"],
+    "when_to_contact_expert": "Seek advice if defoliation threatens fruit maturation.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Grape___healthy": {
+    "display_name": "Healthy Grape Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced nutrition and canopy management"],
+    "preventive_measures": ["Inspect vines weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Orange___Haunglongbing_(Citrus_greening)": {
+    "display_name": "Citrus Greening (Huanglongbing)",
+    "description": "A devastating bacterial disease spread by psyllid insects, causing asymmetric leaf yellowing and misshapen bitter fruit.",
+    "severity": "high",
+    "symptoms": ["Asymmetric blotchy mottling of leaves", "Small, lopsided, and bitter fruit", "Premature fruit drop", "Twig dieback"],
+    "recommended_actions": ["Report suspected cases to agricultural authorities", "Control Asian citrus psyllid vectors", "Remove confirmed infected trees to prevent spread"],
+    "preventive_measures": ["Use certified disease-free nursery stock", "Monitor and control psyllid populations", "Inspect trees regularly"],
+    "when_to_contact_expert": "Contact an agricultural officer immediately — this is a quarantine-level disease in many regions.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Peach___Bacterial_spot": {
+    "display_name": "Peach Bacterial Spot",
+    "description": "A bacterial disease causing small dark lesions on peach leaves and fruit, leading to defoliation and fruit blemishes.",
+    "severity": "moderate",
+    "symptoms": ["Small angular dark spots on leaves", "Shot-hole appearance as spots fall out", "Sunken lesions on fruit"],
+    "recommended_actions": ["Remove severely affected shoots", "Apply copper-based sprays during dormancy", "Avoid overhead irrigation"],
+    "preventive_measures": ["Plant resistant varieties", "Ensure good air circulation", "Avoid working among wet trees"],
+    "when_to_contact_expert": "Seek advice if fruit quality is significantly affected or defoliation is severe.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Peach___healthy": {
+    "display_name": "Healthy Peach Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect trees weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Pepper,_bell___Bacterial_spot": {
+    "display_name": "Bell Pepper Bacterial Spot",
+    "description": "A bacterial disease causing small dark water-soaked spots on pepper leaves, stems, and fruit.",
+    "severity": "moderate",
+    "symptoms": ["Small dark water-soaked leaf spots", "Raised scab-like spots on fruit", "Leaf yellowing and drop"],
+    "recommended_actions": ["Remove and destroy infected plants", "Avoid overhead watering", "Rotate crops"],
+    "preventive_measures": ["Use certified disease-free seed", "Rotate with non-host crops for 2–3 years", "Avoid handling wet plants"],
+    "when_to_contact_expert": "Contact an agricultural officer if the disease is spreading rapidly in the field.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Pepper,_bell___healthy": {
+    "display_name": "Healthy Bell Pepper Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Potato___Early_blight": {
+    "display_name": "Potato Early Blight",
+    "description": "A leaf disease marked by dark concentric lesions, commonly affecting stressed or older plants.",
+    "severity": "moderate",
+    "symptoms": ["Dark target-shaped spots", "Lower leaf yellowing"],
+    "recommended_actions": ["Remove heavily affected foliage", "Reduce plant stress", "Keep leaves dry"],
+    "preventive_measures": ["Rotate crops", "Use clean seed tubers", "Maintain balanced fertility"],
+    "when_to_contact_expert": "Contact an officer if lesions reach stems or spread across the plot.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Potato___Late_blight": {
+    "display_name": "Potato Late Blight",
+    "description": "A serious, fast-moving disease of potato leaves and tubers, favored by wet weather.",
+    "severity": "high",
+    "symptoms": ["Water-soaked lesions", "White growth at lesion edges", "Rapid canopy collapse"],
+    "recommended_actions": ["Inspect the entire field", "Remove severely affected plants safely", "Seek urgent local crop-protection advice"],
+    "preventive_measures": ["Use certified seed", "Destroy volunteer plants", "Avoid excess leaf wetness"],
+    "when_to_contact_expert": "Contact an agricultural officer immediately.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Potato___healthy": {
+    "display_name": "Healthy Potato Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Raspberry___healthy": {
+    "display_name": "Healthy Raspberry Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Prune old canes after fruiting", "Ensure good air circulation"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Soybean___healthy": {
+    "display_name": "Healthy Soybean Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced fertilization"],
+    "preventive_measures": ["Scout fields regularly", "Rotate crops", "Manage crop residue"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Squash___Powdery_mildew": {
+    "display_name": "Squash Powdery Mildew",
+    "description": "A common fungal disease forming white powdery patches on squash leaves, reducing photosynthesis and yield.",
+    "severity": "moderate",
+    "symptoms": ["White powdery patches on upper leaf surfaces", "Yellowing and browning of affected leaves", "Premature leaf death"],
+    "recommended_actions": ["Remove severely affected leaves", "Apply approved fungicide if spreading rapidly", "Improve air circulation"],
+    "preventive_measures": ["Plant resistant varieties", "Avoid crowded plantings", "Water at the base of plants"],
+    "when_to_contact_expert": "Seek advice if powdery mildew covers most leaves and fruit production is declining.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Strawberry___Leaf_scorch": {
+    "display_name": "Strawberry Leaf Scorch",
+    "description": "A fungal disease causing small dark purple spots that enlarge and coalesce, giving leaves a scorched appearance.",
+    "severity": "moderate",
+    "symptoms": ["Small dark purple leaf spots", "Spots enlarge and merge", "Leaves appear scorched and dry"],
+    "recommended_actions": ["Remove and destroy affected leaves", "Improve plant spacing and air circulation", "Apply approved fungicide if progressing"],
+    "preventive_measures": ["Use certified disease-free planting material", "Renovate beds after harvest", "Avoid overhead irrigation"],
+    "when_to_contact_expert": "Seek advice if defoliation is severe and threatens fruit production.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Strawberry___healthy": {
+    "display_name": "Healthy Strawberry Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Keep beds clean", "Remove old runners"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Tomato___Bacterial_spot": {
+    "display_name": "Tomato Bacterial Spot",
+    "description": "A bacterial disease causing small dark water-soaked spots on tomato leaves, stems, and fruit.",
+    "severity": "moderate",
+    "symptoms": ["Small dark water-soaked spots on leaves", "Raised scab-like lesions on fruit", "Leaf yellowing and defoliation"],
+    "recommended_actions": ["Remove and destroy infected plants", "Avoid overhead watering", "Apply copper-based sprays as a preventive measure"],
+    "preventive_measures": ["Use certified disease-free seed and transplants", "Rotate with non-host crops for 2–3 years", "Avoid handling wet plants"],
+    "when_to_contact_expert": "Contact an agricultural officer if the disease is spreading rapidly.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
   "Tomato___Early_blight": {
     "display_name": "Tomato Early Blight",
     "description": "A common fungal leaf disease that begins as brown spots with concentric rings, usually on older leaves.",
@@ -29,6 +319,56 @@
     "when_to_contact_expert": "Seek advice if symptoms continue spreading after moisture is controlled.",
     "urgency": "Action recommended within 2–3 days"
   },
+  "Tomato___Septoria_leaf_spot": {
+    "display_name": "Tomato Septoria Leaf Spot",
+    "description": "A fungal disease producing many small circular spots with dark borders and gray centers on tomato leaves.",
+    "severity": "moderate",
+    "symptoms": ["Numerous small circular spots with dark borders", "Gray to tan spot centers with tiny black pycnidia", "Progressive defoliation from bottom up"],
+    "recommended_actions": ["Remove infected lower leaves", "Avoid overhead irrigation", "Apply approved fungicide if disease is progressing rapidly"],
+    "preventive_measures": ["Rotate crops", "Stake or cage plants to keep foliage off ground", "Mulch to prevent soil splash"],
+    "when_to_contact_expert": "Seek advice if rapid defoliation threatens fruit production.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Tomato___Spider_mites Two-spotted_spider_mite": {
+    "display_name": "Tomato Spider Mite Damage",
+    "description": "Damage caused by two-spotted spider mites, producing stippled, yellowed leaves with fine webbing.",
+    "severity": "moderate",
+    "symptoms": ["Fine stippling on leaf surfaces", "Yellowed and bronzed leaves", "Fine silk webbing on leaf undersides"],
+    "recommended_actions": ["Spray leaves with water to dislodge mites", "Apply approved miticide if infestation is heavy", "Introduce beneficial predatory mites if available"],
+    "preventive_measures": ["Monitor plants regularly, especially during hot dry weather", "Avoid excessive pesticide use that kills natural predators", "Maintain adequate plant hydration"],
+    "when_to_contact_expert": "Contact an officer if mite populations are not controlled after treatment and plants show severe damage.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Tomato___Target_Spot": {
+    "display_name": "Tomato Target Spot",
+    "description": "A fungal disease causing concentric ring lesions on tomato leaves, stems, and fruit.",
+    "severity": "moderate",
+    "symptoms": ["Circular lesions with concentric rings", "Dark brown spots on lower leaves first", "Can affect stems and fruit"],
+    "recommended_actions": ["Remove affected lower leaves", "Improve air circulation", "Apply approved fungicide if progressing"],
+    "preventive_measures": ["Rotate crops", "Avoid overcrowded planting", "Stake plants to improve airflow"],
+    "when_to_contact_expert": "Seek advice if lesions appear on fruit or spread to upper canopy.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "display_name": "Tomato Yellow Leaf Curl Virus",
+    "description": "A viral disease transmitted by whiteflies, causing severe leaf curling, yellowing, and stunted growth.",
+    "severity": "high",
+    "symptoms": ["Upward curling of leaf margins", "Yellowing of leaf edges", "Stunted plant growth", "Reduced fruit production"],
+    "recommended_actions": ["Remove and destroy infected plants promptly", "Control whitefly populations aggressively", "Use insect-proof netting in nurseries"],
+    "preventive_measures": ["Use resistant varieties", "Implement whitefly management programs", "Use reflective mulches to repel whiteflies"],
+    "when_to_contact_expert": "Contact an agricultural officer immediately, especially if multiple plants are affected.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "display_name": "Tomato Mosaic Virus",
+    "description": "A highly contagious viral disease causing mottled light and dark green patterns on tomato leaves with potential yield loss.",
+    "severity": "moderate",
+    "symptoms": ["Mosaic pattern of light and dark green on leaves", "Leaf distortion and curling", "Stunted growth in severe cases"],
+    "recommended_actions": ["Remove and destroy infected plants", "Disinfect tools with 10% bleach solution between plants", "Do not save seed from infected plants"],
+    "preventive_measures": ["Use resistant varieties", "Wash hands before handling plants", "Avoid tobacco use near tomato plants", "Disinfect tools regularly"],
+    "when_to_contact_expert": "Seek advice if virus symptoms are spreading through the planting despite removal of infected plants.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
   "Tomato___healthy": {
     "display_name": "Healthy Tomato Leaf",
     "description": "No common disease pattern was strongly detected in this image.",
@@ -38,56 +378,6 @@
     "preventive_measures": ["Inspect plants weekly", "Keep tools clean", "Remove plant debris"],
     "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
     "urgency": "No urgent action indicated"
-  },
-  "Potato___Early_blight": {
-    "display_name": "Potato Early Blight",
-    "description": "A leaf disease marked by dark concentric lesions, commonly affecting stressed or older plants.",
-    "severity": "moderate",
-    "symptoms": ["Dark target-shaped spots", "Lower leaf yellowing"],
-    "recommended_actions": ["Remove heavily affected foliage", "Reduce plant stress", "Keep leaves dry"],
-    "preventive_measures": ["Rotate crops", "Use clean seed tubers", "Maintain balanced fertility"],
-    "when_to_contact_expert": "Contact an officer if lesions reach stems or spread across the plot.",
-    "urgency": "Action recommended within 24–48 hours"
-  },
-  "Potato___Late_blight": {
-    "display_name": "Potato Late Blight",
-    "description": "A serious, fast-moving disease of potato leaves and tubers, favored by wet weather.",
-    "severity": "high",
-    "symptoms": ["Water-soaked lesions", "White growth at lesion edges", "Rapid canopy collapse"],
-    "recommended_actions": ["Inspect the entire field", "Remove severely affected plants safely", "Seek urgent local crop-protection advice"],
-    "preventive_measures": ["Use certified seed", "Destroy volunteer plants", "Avoid excess leaf wetness"],
-    "when_to_contact_expert": "Contact an agricultural officer immediately.",
-    "urgency": "Urgent action recommended today"
-  },
-  "Rice___Brown_spot": {
-    "display_name": "Rice Brown Spot",
-    "description": "A fungal disease causing oval brown lesions, often more visible where plant nutrition or water management is poor.",
-    "severity": "moderate",
-    "symptoms": ["Oval brown leaf spots", "Gray centers on older lesions"],
-    "recommended_actions": ["Check field nutrition and drainage", "Remove infected residue after harvest", "Monitor spread"],
-    "preventive_measures": ["Use treated quality seed", "Maintain balanced soil fertility", "Manage water consistently"],
-    "when_to_contact_expert": "Seek advice when spots are widespread or panicles are affected.",
-    "urgency": "Inspect the field within 48 hours"
-  },
-  "Rice___Leaf_blast": {
-    "display_name": "Rice Leaf Blast",
-    "description": "A potentially serious rice disease producing spindle-shaped lesions and crop loss under favorable conditions.",
-    "severity": "high",
-    "symptoms": ["Diamond-shaped lesions", "Gray centers with brown margins"],
-    "recommended_actions": ["Avoid excess nitrogen", "Inspect neighboring plants", "Consult a local officer about approved management"],
-    "preventive_measures": ["Use tolerant varieties", "Maintain balanced nutrition", "Manage irrigation"],
-    "when_to_contact_expert": "Contact an agricultural officer promptly if lesions spread or reach the neck/panicle.",
-    "urgency": "Urgent field inspection recommended"
-  },
-  "Groundnut___Leaf_spot": {
-    "display_name": "Groundnut Leaf Spot",
-    "description": "A fungal leaf-spot complex that can cause premature leaf fall and reduce pod development.",
-    "severity": "moderate",
-    "symptoms": ["Dark round leaf spots", "Yellow halos", "Premature leaf drop"],
-    "recommended_actions": ["Remove heavily infected residue", "Monitor lower canopy", "Seek approved local management guidance if spreading"],
-    "preventive_measures": ["Rotate with non-host crops", "Use clean seed", "Manage crop residue"],
-    "when_to_contact_expert": "Seek help if defoliation becomes noticeable or the crop is young.",
-    "urgency": "Action recommended within 2–3 days"
   },
   "default": {
     "display_name": "Unmapped Crop Condition",
@@ -100,4 +390,3 @@
     "urgency": "Review when practical"
   }
 }
-
