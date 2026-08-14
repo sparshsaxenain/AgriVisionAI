@@ -1,0 +1,103 @@
+{
+  "Tomato___Early_blight": {
+    "display_name": "Tomato Early Blight",
+    "description": "A common fungal leaf disease that begins as brown spots with concentric rings, usually on older leaves.",
+    "severity": "moderate",
+    "symptoms": ["Brown target-like leaf spots", "Yellowing around lesions", "Older leaves affected first"],
+    "recommended_actions": ["Remove severely affected leaves", "Avoid overhead irrigation", "Improve plant spacing and airflow", "Monitor nearby plants", "Use a locally approved fungicide according to label instructions or agricultural officer guidance if disease progresses"],
+    "preventive_measures": ["Rotate crops", "Sanitize tools and equipment", "Avoid prolonged leaf wetness", "Use healthy planting material"],
+    "when_to_contact_expert": "Contact an agricultural officer if spots spread rapidly, fruit is affected, or the crop does not improve after sanitation.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Tomato___Late_blight": {
+    "display_name": "Tomato Late Blight",
+    "description": "A rapidly spreading disease that can damage leaves, stems, and fruit during cool, wet conditions.",
+    "severity": "high",
+    "symptoms": ["Water-soaked dark patches", "White growth under leaves", "Rapid wilting"],
+    "recommended_actions": ["Isolate and remove badly affected plants", "Keep foliage dry", "Inspect the full plot immediately", "Seek locally approved control guidance"],
+    "preventive_measures": ["Use clean seed or transplants", "Provide airflow", "Avoid working among wet plants"],
+    "when_to_contact_expert": "Contact an agricultural officer promptly because late blight can spread very quickly.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Tomato___Leaf_Mold": {
+    "display_name": "Tomato Leaf Mold",
+    "description": "A moisture-favored fungal disease often seen as yellow patches above and olive growth below leaves.",
+    "severity": "moderate",
+    "symptoms": ["Pale yellow leaf patches", "Olive-green growth below leaves"],
+    "recommended_actions": ["Remove affected foliage", "Reduce humidity around plants", "Water near the soil"],
+    "preventive_measures": ["Increase plant spacing", "Ventilate protected cultivation", "Clean crop debris"],
+    "when_to_contact_expert": "Seek advice if symptoms continue spreading after moisture is controlled.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "Tomato___healthy": {
+    "display_name": "Healthy Tomato Leaf",
+    "description": "No common disease pattern was strongly detected in this image.",
+    "severity": "low",
+    "symptoms": [],
+    "recommended_actions": ["Continue routine monitoring", "Maintain balanced watering and nutrition"],
+    "preventive_measures": ["Inspect plants weekly", "Keep tools clean", "Remove plant debris"],
+    "when_to_contact_expert": "Consult an expert if the plant has symptoms not clearly visible in the image.",
+    "urgency": "No urgent action indicated"
+  },
+  "Potato___Early_blight": {
+    "display_name": "Potato Early Blight",
+    "description": "A leaf disease marked by dark concentric lesions, commonly affecting stressed or older plants.",
+    "severity": "moderate",
+    "symptoms": ["Dark target-shaped spots", "Lower leaf yellowing"],
+    "recommended_actions": ["Remove heavily affected foliage", "Reduce plant stress", "Keep leaves dry"],
+    "preventive_measures": ["Rotate crops", "Use clean seed tubers", "Maintain balanced fertility"],
+    "when_to_contact_expert": "Contact an officer if lesions reach stems or spread across the plot.",
+    "urgency": "Action recommended within 24–48 hours"
+  },
+  "Potato___Late_blight": {
+    "display_name": "Potato Late Blight",
+    "description": "A serious, fast-moving disease of potato leaves and tubers, favored by wet weather.",
+    "severity": "high",
+    "symptoms": ["Water-soaked lesions", "White growth at lesion edges", "Rapid canopy collapse"],
+    "recommended_actions": ["Inspect the entire field", "Remove severely affected plants safely", "Seek urgent local crop-protection advice"],
+    "preventive_measures": ["Use certified seed", "Destroy volunteer plants", "Avoid excess leaf wetness"],
+    "when_to_contact_expert": "Contact an agricultural officer immediately.",
+    "urgency": "Urgent action recommended today"
+  },
+  "Rice___Brown_spot": {
+    "display_name": "Rice Brown Spot",
+    "description": "A fungal disease causing oval brown lesions, often more visible where plant nutrition or water management is poor.",
+    "severity": "moderate",
+    "symptoms": ["Oval brown leaf spots", "Gray centers on older lesions"],
+    "recommended_actions": ["Check field nutrition and drainage", "Remove infected residue after harvest", "Monitor spread"],
+    "preventive_measures": ["Use treated quality seed", "Maintain balanced soil fertility", "Manage water consistently"],
+    "when_to_contact_expert": "Seek advice when spots are widespread or panicles are affected.",
+    "urgency": "Inspect the field within 48 hours"
+  },
+  "Rice___Leaf_blast": {
+    "display_name": "Rice Leaf Blast",
+    "description": "A potentially serious rice disease producing spindle-shaped lesions and crop loss under favorable conditions.",
+    "severity": "high",
+    "symptoms": ["Diamond-shaped lesions", "Gray centers with brown margins"],
+    "recommended_actions": ["Avoid excess nitrogen", "Inspect neighboring plants", "Consult a local officer about approved management"],
+    "preventive_measures": ["Use tolerant varieties", "Maintain balanced nutrition", "Manage irrigation"],
+    "when_to_contact_expert": "Contact an agricultural officer promptly if lesions spread or reach the neck/panicle.",
+    "urgency": "Urgent field inspection recommended"
+  },
+  "Groundnut___Leaf_spot": {
+    "display_name": "Groundnut Leaf Spot",
+    "description": "A fungal leaf-spot complex that can cause premature leaf fall and reduce pod development.",
+    "severity": "moderate",
+    "symptoms": ["Dark round leaf spots", "Yellow halos", "Premature leaf drop"],
+    "recommended_actions": ["Remove heavily infected residue", "Monitor lower canopy", "Seek approved local management guidance if spreading"],
+    "preventive_measures": ["Rotate with non-host crops", "Use clean seed", "Manage crop residue"],
+    "when_to_contact_expert": "Seek help if defoliation becomes noticeable or the crop is young.",
+    "urgency": "Action recommended within 2–3 days"
+  },
+  "default": {
+    "display_name": "Unmapped Crop Condition",
+    "description": "The model recognized a class that is not yet in the local advisory library.",
+    "severity": "unknown",
+    "symptoms": [],
+    "recommended_actions": ["Photograph the whole plant and affected area", "Monitor for changes", "Ask a local agricultural expert to verify the result"],
+    "preventive_measures": ["Keep tools clean", "Avoid moving affected plant material between fields"],
+    "when_to_contact_expert": "Expert verification is recommended for this result.",
+    "urgency": "Review when practical"
+  }
+}
+

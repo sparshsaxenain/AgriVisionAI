@@ -1,0 +1,19 @@
+{
+  "risk_levels": {"low_max": 2, "moderate_max": 5},
+  "rules": [
+    {"id": "high_temperature", "field": "temperature", "operator": ">=", "value": 39.5, "score": 3, "message": "Body temperature is above the normal screening threshold."},
+    {"id": "reduced_appetite", "field": "appetite", "operator": "in", "value": ["Low", "None"], "score": 2, "message": "Reduced appetite can be an early sign of illness."},
+    {"id": "low_activity", "field": "activity_level", "operator": "in", "value": ["Low", "Very low"], "score": 2, "message": "Activity is lower than usual."},
+    {"id": "abnormal_respiration", "field": "respiration", "operator": "!=", "value": "Normal", "score": 3, "message": "Breathing appears abnormal."},
+    {"id": "diarrhea", "field": "diarrhea", "operator": "==", "value": true, "score": 2, "message": "Diarrhea can cause dehydration and may indicate illness."},
+    {"id": "visible_injury", "field": "visible_injury", "operator": "==", "value": true, "score": 3, "message": "A visible injury was reported."},
+    {"id": "coughing", "field": "coughing", "operator": "==", "value": true, "score": 2, "message": "Coughing was reported."},
+    {"id": "nasal_discharge", "field": "nasal_discharge", "operator": "==", "value": true, "score": 2, "message": "Nasal discharge was reported."}
+  ],
+  "recommendations": {
+    "low": ["Continue routine observation and record any changes."],
+    "moderate": ["Observe closely, provide clean water and a calm environment.", "Consult a veterinarian if signs persist or worsen."],
+    "high": ["Possible fever, infection, injury, or respiratory indicators require prompt attention.", "Contact a qualified veterinarian as soon as possible.", "Keep the animal separated from the herd if an infectious illness is suspected."]
+  }
+}
+

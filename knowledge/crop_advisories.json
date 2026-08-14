@@ -1,0 +1,6 @@
+{
+  "confidence_thresholds": {"high": 0.8, "moderate": 0.6},
+  "low_confidence_message": "Image evidence is limited. Please take a clear close-up in daylight and ask an agricultural expert to verify the result.",
+  "safety_note": "Use crop-protection products only when locally approved and follow label instructions or agricultural officer guidance."
+}
+

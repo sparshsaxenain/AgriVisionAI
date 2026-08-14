@@ -1,0 +1,19 @@
+{
+  "status_windows": {"due_soon_days": 7, "upcoming_days": 30},
+  "schedules": {
+    "Cow": [
+      {"vaccine": "FMD Vaccination", "interval_days": 180},
+      {"vaccine": "HS Vaccination", "interval_days": 365},
+      {"vaccine": "Deworming", "interval_days": 90}
+    ],
+    "Buffalo": [{"vaccine": "FMD Vaccination", "interval_days": 180}],
+    "Goat": [
+      {"vaccine": "PPR Vaccination", "interval_days": 1095},
+      {"vaccine": "Deworming", "interval_days": 90}
+    ],
+    "Sheep": [{"vaccine": "PPR Vaccination", "interval_days": 1095}],
+    "Poultry": [{"vaccine": "Newcastle Disease Vaccination", "interval_days": 90}]
+  },
+  "notice": "Vaccination timing varies by location, age, product, and health status. Confirm schedules with a qualified veterinarian or local animal-health officer."
+}
+

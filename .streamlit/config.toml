@@ -1,0 +1,13 @@
+[client]
+showSidebarNavigation = false
+
+[theme]
+primaryColor = "#247A45"
+backgroundColor = "#F7F7F1"
+secondaryBackgroundColor = "#EAF2E7"
+textColor = "#173D2A"
+font = "sans serif"
+
+[server]
+maxUploadSize = 8
+
