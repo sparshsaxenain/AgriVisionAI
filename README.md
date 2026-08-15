@@ -26,6 +26,8 @@ Marginal farmers often have to navigate separate agricultural and veterinary too
 - English interface plus Hindi and Tamil navigation examples
 - Local SQLite storage and no required external services
 - REST API and interactive OpenAPI documentation
+- Natural-language LangGraph agent that reads and updates records through authenticated API tools
+- Fully local Ollama inference with a Gemma-family default and no cloud LLM key
 
 ## Architecture
 
@@ -65,6 +67,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 Copy-Item .env.example .env
+ollama pull gemma3:4b
 python scripts\seed_database.py
 python run.py
 ```
@@ -77,11 +80,40 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 cp .env.example .env
+ollama pull gemma3:4b
 python scripts/seed_database.py
 python run.py
 ```
 
 Open [http://localhost:8501](http://localhost:8501). `run.py` seeds missing demo data, starts the API and interface, opens the browser, and stops both processes together on Ctrl+C.
+
+Install and start [Ollama](https://docs.ollama.com/quickstart) before using the AI Assistant. The Ollama desktop app normally starts the service automatically; otherwise run `ollama serve` in another terminal.
+
+## Agentic AI assistant
+
+Open **AI Assistant** after signing in and type the outcome you want. Examples:
+
+```text
+Which animals need attention and what should I do next?
+Show vaccinations due for Lakshmi.
+Add a 0.75 acre tomato crop at Green Valley Farm, seedling stage.
+Record Lakshmi's temperature as 40.2 C with low appetite and low activity.
+Mark my vaccination alert as read.
+```
+
+The implementation is an explicit LangGraph loop:
+
+```text
+user query -> Ollama JSON-schema planner -> authenticated API tool -> observation
+                  ^                                              |
+                  +---------------- plan next step ---------------+
+                                      |
+                                verified answer
+```
+
+The default `OLLAMA_MODEL=gemma3:4b` means **Gemma 3 with 4 billion parameters**, which is the likely intended Ollama model when referring to "Gemma 4." The planner uses Ollama JSON-schema structured output instead of requiring model-specific native function calling, so the loop remains compatible with Gemma 3. You can substitute another local Ollama chat model through `OLLAMA_MODEL`.
+
+Agent tools currently cover dashboard summaries, farms, crops, crop diagnosis history, livestock, health history, medical records, vaccinations, alerts, farm/crop/animal creation, animal observations, medical/vaccination entries, and marking alerts read. Every call reuses the signed-in user's bearer token, so existing API ownership checks remain authoritative.
 
 ### Run services separately
 
@@ -126,6 +158,11 @@ Copy `.env.example` to `.env`.
 | `SECRET_KEY` | JWT signing key; change outside local demo | development value |
 | `API_BASE_URL` | URL used by Streamlit | `http://localhost:8000` |
 | `CORS_ORIGINS` | Comma-separated allowed browser origins | `http://localhost:8501` |
+| `OLLAMA_BASE_URL` | Local Ollama server | `http://localhost:11434` |
+| `OLLAMA_MODEL` | Local planning model | `gemma3:4b` |
+| `AGENT_MAX_STEPS` | Maximum planner iterations per query | `8` |
+| `AGENT_TIMEOUT_SECONDS` | Ollama and internal API timeout | `180` |
+| `AGENT_CONTEXT_WINDOW` | Ollama context window requested by the planner | `8192` |
 
 ## Supplied model integration
 
@@ -164,6 +201,7 @@ The default preprocessing resizes to `IMAGE_SIZE` and scales RGB pixels to `[0,1
 | Animal care | observation, history, medical-record, and vaccination routes under `/livestock/{id}` |
 | Alerts | `GET /alerts`, `PATCH /alerts/{id}/read` |
 | Dashboard | `GET /dashboard/summary` |
+| Agentic AI | `GET /agent/status`, `POST /agent/query` |
 
 Every farmer-data endpoint requires `Authorization: Bearer <token>`.
 
@@ -171,6 +209,7 @@ Every farmer-data endpoint requires `Authorization: Bearer <token>`.
 
 ```text
 backend/             FastAPI routes, configuration, ORM models, schemas, services
+backend/agent/       LangGraph planner, Ollama integration, and authenticated API tools
 frontend/            Streamlit app, farmer pages, shared UI, API client, translations
 knowledge/           Crop advice, animal rules, and vaccination schedules
 ml/                  Framework adapters, preprocessing, normalized inference contract
@@ -216,4 +255,3 @@ Add final presentation captures here after running on the target display:
 - Optional record-grounded LLM assistant behind a disabled-by-default service
 - Grad-CAM overlays for compatible vision architectures
 - PWA/offline capture synchronization if a web client is later added
-
