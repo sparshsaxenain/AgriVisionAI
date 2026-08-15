@@ -190,10 +190,88 @@ class KerasCropModelAdapter(BaseCropModelAdapter):
         return PredictionResult(top[0].class_name, top[0].display_name, top[0].confidence, top, self.model_path.name, round((time.perf_counter() - started) * 1000, 1))
 
 
+class MobileNetV3CropModelAdapter(BaseCropModelAdapter):
+    """Adapter for the fine-tuned MobileNetV3-Large plant disease classifier.
+
+    This adapter reconstructs the exact architecture used during training
+    (mobilenet_v3_large with a 38-class classifier head), loads the saved
+    state_dict checkpoint, and applies ImageNet normalization during
+    preprocessing to match the training pipeline.
+    """
+
+    IMAGENET_MEAN = [0.485, 0.456, 0.406]
+    IMAGENET_STD = [0.229, 0.224, 0.225]
+
+    def __init__(self, model_path: str, class_names_path: str, image_size: int = 224):
+        self.model_path = Path(model_path)
+        self.class_names = load_class_names(class_names_path)
+        self.image_size = image_size
+        self.num_classes = len(self.class_names)
+        self.model: Any = None
+        self._torch: Any = None
+        self._transforms: Any = None
+
+    def load_model(self) -> None:
+        import torch
+        import torch.nn as nn
+        from torchvision import models, transforms
+
+        self._torch = torch
+        self._transforms = transforms
+
+        # Reconstruct the exact architecture used during training.
+        model = models.mobilenet_v3_large(weights=None)
+        model.classifier[3] = nn.Linear(model.classifier[3].in_features, self.num_classes)
+
+        # Load the state_dict checkpoint.
+        checkpoint = torch.load(str(self.model_path), map_location="cpu", weights_only=False)
+        if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+            model.load_state_dict(checkpoint["state_dict"])
+        elif isinstance(checkpoint, dict):
+            model.load_state_dict(checkpoint)
+        else:
+            raise ValueError("Unexpected checkpoint format for MobileNetV3 adapter.")
+        model.eval()
+        self.model = model
+
+    @property
+    def loaded(self) -> bool:
+        return self.model is not None
+
+    def preprocess(self, image: Image.Image) -> Any:
+        """Apply the same preprocessing pipeline used during training:
+        Resize → ToTensor ([0,1]) → ImageNet Normalize.
+        """
+        transform = self._transforms.Compose([
+            self._transforms.Resize((self.image_size, self.image_size)),
+            self._transforms.ToTensor(),
+            self._transforms.Normalize(self.IMAGENET_MEAN, self.IMAGENET_STD),
+        ])
+        return transform(image.convert("RGB")).unsqueeze(0)
+
+    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult:
+        started = time.perf_counter()
+        tensor = self.preprocess(image)
+        with self._torch.no_grad():
+            output = self.model(tensor)
+        probabilities = self._torch.softmax(output, dim=-1)[0].cpu().numpy()
+        order = np.argsort(probabilities)[::-1][:3]
+        top = [
+            PredictionItem(self.class_names[i], friendly_name(self.class_names[i]), float(probabilities[i]))
+            for i in order
+        ]
+        return PredictionResult(
+            top[0].class_name, top[0].display_name, top[0].confidence, top,
+            self.model_path.name, round((time.perf_counter() - started) * 1000, 1),
+        )
+
+
 def create_model_adapter(settings: Any) -> BaseCropModelAdapter:
     model_exists = Path(settings.model_path).exists()
     if settings.use_mock_model or not model_exists:
         adapter: BaseCropModelAdapter = MockCropModelAdapter()
+    elif settings.model_type.lower() in {"mobilenetv3", "mobilenet_v3"}:
+        adapter = MobileNetV3CropModelAdapter(settings.model_path, settings.class_names_path, settings.image_size)
     elif settings.model_type.lower() in {"keras", "tensorflow", "h5", "savedmodel"}:
         adapter = KerasCropModelAdapter(settings.model_path, settings.class_names_path, settings.image_size)
     else:
