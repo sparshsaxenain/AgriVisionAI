@@ -43,8 +43,10 @@ class Farm(Base, TimestampMixin):
     area_unit: Mapped[str] = mapped_column(String(30), default="acres")
     soil_type: Mapped[str] = mapped_column(String(80), default="Unknown")
     irrigation_type: Mapped[str] = mapped_column(String(80), default="Rainfed")
+    status: Mapped[str] = mapped_column(String(40), default="Active")
     farmer: Mapped[User] = relationship(back_populates="farms")
     crops: Mapped[list[Crop]] = relationship(back_populates="farm", cascade="all, delete-orphan")
+    livestock: Mapped[list[Livestock]] = relationship(back_populates="farm", cascade="all, delete-orphan")
 
 
 class Crop(Base, TimestampMixin):
@@ -95,7 +97,7 @@ class Livestock(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(30), default="Healthy")
     notes: Mapped[str] = mapped_column(Text, default="")
     farmer: Mapped[User] = relationship(back_populates="livestock")
-    farm: Mapped[Farm] = relationship()
+    farm: Mapped[Farm] = relationship(back_populates="livestock")
     observations: Mapped[list[LivestockObservation]] = relationship(back_populates="livestock", cascade="all, delete-orphan")
     medical_records: Mapped[list[LivestockMedicalRecord]] = relationship(back_populates="livestock", cascade="all, delete-orphan")
     vaccinations: Mapped[list[VaccinationRecord]] = relationship(back_populates="livestock", cascade="all, delete-orphan")

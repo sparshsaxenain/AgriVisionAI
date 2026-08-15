@@ -45,8 +45,8 @@ def seed() -> None:
         today = date.today()
         crops = [
             Crop(farm_id=farm.id, crop_name="Tomato", variety="Arka Rakshak", sowing_date=today - timedelta(days=62), expected_harvest_date=today + timedelta(days=28), area=2.0, crop_stage="Fruiting", status="Active", notes="Drip irrigated"),
-            Crop(farm_id=farm.id, crop_name="Paddy", variety="CO 51", sowing_date=today - timedelta(days=35), expected_harvest_date=today + timedelta(days=80), area=2.5, crop_stage="Vegetative", status="Active", notes="Field transplanted"),
-            Crop(farm_id=farm.id, crop_name="Groundnut", variety="TMV 13", sowing_date=today - timedelta(days=28), expected_harvest_date=today + timedelta(days=78), area=1.0, crop_stage="Flowering", status="Active", notes="Rainfed block"),
+            Crop(farm_id=farm.id, crop_name="Potato", variety="Kufri Jyoti", sowing_date=today - timedelta(days=35), expected_harvest_date=today + timedelta(days=80), area=2.5, crop_stage="Vegetative", status="Active", notes="Drip irrigated block"),
+            Crop(farm_id=farm.id, crop_name="Corn (maize)", variety="Local hybrid", sowing_date=today - timedelta(days=28), expected_harvest_date=today + timedelta(days=78), area=1.0, crop_stage="Flowering", status="Active", notes="Rainfed block"),
         ]
         db.add_all(crops)
         db.flush()
@@ -106,4 +106,3 @@ def seed() -> None:
 
 if __name__ == "__main__":
     seed()
-

@@ -4,13 +4,12 @@ import streamlit as st
 from PIL import Image
 
 from frontend.components.ui import api_error, page_title
+from frontend.utils.crop_catalog import is_model_supported
 
 
 def _results(result: dict, client) -> None:
     advisory = result["advisory"]
     st.markdown("### AI Analysis")
-    if result.get("mock_mode"):
-        st.caption("Demo model mode · connect the supplied model for field predictions")
     st.markdown(f"<div class='ag-card'><div class='ag-eyebrow'>Detected condition</div><h2 style='margin:.35rem 0'>{result['display_name']}</h2><b>{result['confidence']:.1%}</b> · {result['confidence_label']}<br><br><span class='ag-chip {'critical' if result['severity'].lower() == 'high' else 'warning'}'>{result['severity'].title()} severity</span></div>", unsafe_allow_html=True)
     st.progress(float(result["confidence"]), text=f"Confidence {result['confidence']:.1%}")
     if result["confidence"] < .6:
@@ -49,6 +48,7 @@ def render(client) -> None:
     try:
         farms = client.get("/farms")
         crops = client.get("/crops")
+        supported_types = client.get("/diagnosis/supported-crops")
     except Exception as exc:
         api_error(exc)
         return
@@ -58,13 +58,19 @@ def render(client) -> None:
     left, right = st.columns([1, 1.05], gap="large")
     with left:
         st.markdown("### Upload Crop Image")
+        st.caption("Image model crop types: " + ", ".join(supported_types))
         farm_map = {farm["farm_name"]: farm for farm in farms}
         selected_farm_name = st.selectbox("Farm", list(farm_map))
         farm = farm_map[selected_farm_name]
-        farm_crops = [crop for crop in crops if crop["farm_id"] == farm["id"] and crop["status"] == "Active"]
+        farm_crops = [
+            crop for crop in crops
+            if crop["farm_id"] == farm["id"]
+            and crop["status"] == "Active"
+            and is_model_supported(crop["crop_name"], supported_types)
+        ]
         crop_map = {f"{crop['crop_name']} · {crop['crop_stage']}": crop for crop in farm_crops}
         if not crop_map:
-            st.warning("This farm has no active crops.")
+            st.warning("This farm has no active crop matching the image model's supported crop list.")
             return
         selected_crop_name = st.selectbox("Crop", list(crop_map))
         crop = crop_map[selected_crop_name]

@@ -63,3 +63,6 @@ class AgentAPIClient:
 
     def patch(self, path: str, payload: dict[str, Any] | None = None) -> Any:
         return self.request("PATCH", path, json=payload or {})
+
+    def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
+        return self.request("DELETE", path, params=params)

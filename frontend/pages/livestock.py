@@ -145,17 +145,44 @@ def render(client) -> None:
         st.markdown(f"**Status:** {animal['status']}  \n**Sex:** {animal['sex']}  \n**Born:** {animal['date_of_birth'] or 'Not recorded'}  \n**Notes:** {animal['notes'] or '—'}")
         with st.expander("✏️ Edit animal"):
             with st.form(f"edit_animal_{animal['id']}"):
+                farm_ids = [farm["id"] for farm in farms]
+                selected_farm_id = st.selectbox(
+                    "Farm",
+                    farm_ids,
+                    index=farm_ids.index(animal["farm_id"]) if animal["farm_id"] in farm_ids else 0,
+                    format_func=lambda farm_id: next(farm["farm_name"] for farm in farms if farm["id"] == farm_id),
+                )
                 c1, c2 = st.columns(2)
                 name = c1.text_input("Name", value=animal["name"])
                 breed = c2.text_input("Breed", value=animal["breed"])
                 c3, c4 = st.columns(2)
                 weight = c3.number_input("Weight (kg)", min_value=0.0, value=float(animal["weight"] or 0), step=1.0)
                 status = c4.selectbox("Status", ["Healthy", "Needs attention", "Under treatment", "Sold", "Deceased"], index=["Healthy", "Needs attention", "Under treatment", "Sold", "Deceased"].index(animal["status"]) if animal["status"] in ["Healthy", "Needs attention", "Under treatment", "Sold", "Deceased"] else 0)
+                c5, c6 = st.columns(2)
+                animal_types = ["Cow", "Buffalo", "Goat", "Sheep", "Poultry", "Other"]
+                animal_type = c5.selectbox("Animal type", animal_types, index=animal_types.index(animal["animal_type"]) if animal["animal_type"] in animal_types else len(animal_types) - 1)
+                tag_id = c6.text_input("Tag ID", value=animal["tag_id"])
+                c7, c8 = st.columns(2)
+                sexes = ["Female", "Male", "Unknown"]
+                sex = c7.selectbox("Sex", sexes, index=sexes.index(animal["sex"]) if animal["sex"] in sexes else 2)
+                born_value = date.fromisoformat(animal["date_of_birth"]) if animal["date_of_birth"] else date.today()
+                born = c8.date_input("Date of birth", value=born_value)
                 notes = st.text_area("Notes", value=animal["notes"])
                 if st.form_submit_button("Update Animal", width="stretch"):
                     try:
-                        client.put(f"/livestock/{animal['id']}", json={"farm_id": animal["farm_id"], "animal_type": animal["animal_type"], "breed": breed, "tag_id": animal["tag_id"], "name": name, "sex": animal["sex"], "date_of_birth": animal["date_of_birth"], "weight": weight, "status": status, "notes": notes})
+                        client.patch(f"/livestock/{animal['id']}", json={"farm_id": selected_farm_id, "animal_type": animal_type, "breed": breed, "tag_id": tag_id, "name": name, "sex": sex, "date_of_birth": born.isoformat(), "weight": weight, "status": status, "notes": notes})
                         st.success("Animal updated.")
+                        st.rerun()
+                    except Exception as exc:
+                        api_error(exc)
+        with st.expander("Delete animal"):
+            st.warning("This permanently removes the animal, health observations, medical records, vaccinations, and related alerts.")
+            with st.form(f"delete_animal_{animal['id']}"):
+                confirmation = st.text_input(f"Type tag {animal['tag_id']} to confirm")
+                if st.form_submit_button("Delete Animal", width="stretch", disabled=confirmation != animal["tag_id"]):
+                    try:
+                        client.delete(f"/livestock/{animal['id']}", params={"confirm_tag_id": confirmation})
+                        st.success("Animal and dependent records deleted.")
                         st.rerun()
                     except Exception as exc:
                         api_error(exc)

@@ -1,7 +1,7 @@
 """Database engine and session lifecycle."""
 from collections.abc import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from backend.core.config import get_settings
@@ -29,4 +29,8 @@ def init_db() -> None:
     from backend.models import entities  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
-
+    # Lightweight compatibility migration for databases created before farm
+    # status became editable. New databases receive the column via metadata.
+    if "status" not in {column["name"] for column in inspect(engine).get_columns("farms")}:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE farms ADD COLUMN status VARCHAR(40) NOT NULL DEFAULT 'Active'"))

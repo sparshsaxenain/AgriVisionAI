@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
 
@@ -12,7 +12,7 @@ from backend.api.deps import current_user
 from backend.db.database import get_db
 from backend.models import Alert, Farm, Livestock, LivestockMedicalRecord, LivestockObservation, User, VaccinationRecord
 from backend.schemas.api import (
-    LivestockCreate, LivestockOut, MedicalRecordCreate, MedicalRecordOut,
+    LivestockCreate, LivestockOut, LivestockUpdate, MedicalRecordCreate, MedicalRecordOut,
     ObservationCreate, ObservationOut, VaccinationCreate, VaccinationOut,
 )
 from backend.services.alert_service import create_health_alert
@@ -50,6 +50,39 @@ def create_animal(payload: LivestockCreate, db: Session = Depends(get_db), user:
     return animal
 
 
+@router.get("/vaccinations/due")
+def due_vaccinations(db: Session = Depends(get_db), user: User = Depends(current_user)):
+    """Return every pending vaccination across the signed-in farmer's livestock."""
+    rows = db.execute(
+        select(VaccinationRecord, Livestock)
+        .join(Livestock, Livestock.id == VaccinationRecord.livestock_id)
+        .where(Livestock.farmer_id == user.id, VaccinationRecord.administered_date.is_(None))
+        .order_by(VaccinationRecord.due_date, Livestock.name, Livestock.tag_id)
+    ).all()
+    results = []
+    changed = False
+    for record, animal in rows:
+        current = vaccination_status(record.due_date)
+        if record.status != current:
+            record.status = current
+            changed = True
+        results.append({
+            "id": record.id,
+            "animal_id": animal.id,
+            "animal": animal.name or animal.tag_id,
+            "tag_id": animal.tag_id,
+            "animal_type": animal.animal_type,
+            "vaccine_name": record.vaccine_name,
+            "due_date": record.due_date.isoformat(),
+            "status": current,
+            "veterinarian": record.veterinarian,
+            "notes": record.notes,
+        })
+    if changed:
+        db.commit()
+    return results
+
+
 @router.get("/{animal_id}", response_model=LivestockOut)
 def get_animal(animal_id: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
     return _animal(db, user.id, animal_id)
@@ -66,6 +99,47 @@ def update_animal(animal_id: int, payload: LivestockCreate, db: Session = Depend
     db.commit()
     db.refresh(animal)
     return animal
+
+
+@router.patch("/{animal_id}", response_model=LivestockOut)
+def patch_animal(animal_id: int, payload: LivestockUpdate, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    animal = _animal(db, user.id, animal_id)
+    changes = payload.model_dump(exclude_unset=True)
+    if not changes:
+        raise HTTPException(400, "Provide at least one animal property to update.")
+    if "farm_id" in changes:
+        farm = db.scalar(select(Farm).where(Farm.id == changes["farm_id"], Farm.farmer_id == user.id))
+        if not farm:
+            raise HTTPException(404, "Farm not found.")
+    for key, value in changes.items():
+        setattr(animal, key, value)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "That animal tag is already in use.")
+    db.refresh(animal)
+    return animal
+
+
+@router.delete("/{animal_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_animal(
+    animal_id: int,
+    confirm_tag_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    animal = _animal(db, user.id, animal_id)
+    if confirm_tag_id.strip().casefold() != animal.tag_id.strip().casefold():
+        raise HTTPException(400, "Animal tag confirmation does not match.")
+    db.execute(delete(Alert).where(
+        Alert.farmer_id == user.id,
+        Alert.related_entity == "livestock",
+        Alert.related_entity_id == animal.id,
+    ))
+    db.delete(animal)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/{animal_id}/observation", response_model=ObservationOut, status_code=201)
@@ -111,7 +185,7 @@ def medical_records(animal_id: int, db: Session = Depends(get_db), user: User = 
 
 @router.post("/{animal_id}/vaccination", response_model=VaccinationOut, status_code=201)
 def add_vaccination(animal_id: int, payload: VaccinationCreate, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    _animal(db, user.id, animal_id)
+    animal = _animal(db, user.id, animal_id)
     values = payload.model_dump()
     values["status"] = "Completed" if payload.administered_date else vaccination_status(payload.due_date)
     record = VaccinationRecord(livestock_id=animal_id, **values)

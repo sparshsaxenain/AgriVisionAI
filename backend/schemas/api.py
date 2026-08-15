@@ -55,6 +55,21 @@ class FarmCreate(BaseModel):
     area_unit: str = "acres"
     soil_type: str = "Unknown"
     irrigation_type: str = "Rainfed"
+    status: str = Field(default="Active", max_length=40)
+
+
+class FarmUpdate(BaseModel):
+    farm_name: str | None = Field(default=None, min_length=2, max_length=160)
+    village: str | None = None
+    district: str | None = None
+    state: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    total_area: float | None = Field(default=None, ge=0)
+    area_unit: str | None = None
+    soil_type: str | None = None
+    irrigation_type: str | None = None
+    status: str | None = Field(default=None, min_length=1, max_length=40)
 
 
 class FarmOut(ORMModel):
@@ -70,6 +85,7 @@ class FarmOut(ORMModel):
     area_unit: str
     soil_type: str
     irrigation_type: str
+    status: str
     created_at: datetime
 
 
@@ -83,6 +99,18 @@ class CropCreate(BaseModel):
     crop_stage: str = "Seedling"
     status: str = "Active"
     notes: str = ""
+
+
+class CropUpdate(BaseModel):
+    farm_id: int | None = None
+    crop_name: str | None = Field(default=None, min_length=2, max_length=100)
+    variety: str | None = Field(default=None, max_length=100)
+    sowing_date: date | None = None
+    expected_harvest_date: date | None = None
+    area: float | None = Field(default=None, ge=0)
+    crop_stage: str | None = Field(default=None, min_length=1, max_length=40)
+    status: str | None = Field(default=None, min_length=1, max_length=30)
+    notes: str | None = None
 
 
 class CropOut(ORMModel):
@@ -157,6 +185,19 @@ class LivestockCreate(BaseModel):
     weight: float | None = Field(default=None, ge=0)
     status: str = "Healthy"
     notes: str = ""
+
+
+class LivestockUpdate(BaseModel):
+    farm_id: int | None = None
+    animal_type: str | None = None
+    breed: str | None = None
+    tag_id: str | None = Field(default=None, min_length=2, max_length=80)
+    name: str | None = None
+    sex: str | None = None
+    date_of_birth: date | None = None
+    weight: float | None = Field(default=None, ge=0)
+    status: str | None = None
+    notes: str | None = None
 
 
 class LivestockOut(ORMModel):

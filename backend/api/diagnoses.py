@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 import uuid
-from io import BytesIO
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -19,6 +18,7 @@ from backend.schemas.api import DiagnosisOut, DiagnosisPreview, DiagnosisSave
 from backend.services.advisory_service import AdvisoryService
 from backend.services.alert_service import create_crop_alerts
 from backend.services.crop_inference import get_crop_model
+from backend.services.crop_catalog import supported_crop_types
 from ml.preprocessing import open_rgb_image
 
 router = APIRouter(prefix="/diagnosis", tags=["Crop Diagnosis"])
@@ -34,15 +34,33 @@ def _owned_context(db: Session, user_id: int, farm_id: int, crop_id: int) -> tup
     return farm, crop
 
 
-@router.post("/predict", response_model=DiagnosisPreview)
-async def predict_crop(
-    farm_id: int = Form(...),
-    crop_id: int = Form(...),
-    image: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    user: User = Depends(current_user),
-):
+async def analyze_crop_upload(
+    farm_id: int,
+    crop_id: int,
+    image: UploadFile,
+    db: Session,
+    user: User,
+) -> DiagnosisPreview:
+    """Analyze an image for a known crop and retain it for an optional save."""
     _, crop = _owned_context(db, user.id, farm_id, crop_id)
+    return await analyze_image_upload(
+        image,
+        crop_name=crop.crop_name,
+        crop_stage=crop.crop_stage,
+        persist_image=True,
+        log_context=f"user={user.id} crop={crop_id}",
+    )
+
+
+async def analyze_image_upload(
+    image: UploadFile,
+    *,
+    crop_name: str = "",
+    crop_stage: str = "",
+    persist_image: bool = False,
+    log_context: str = "standalone image",
+) -> DiagnosisPreview:
+    """Run validated crop inference, optionally retaining the image for persistence."""
     suffix = Path(image.filename or "").suffix.lower()
     if suffix not in ALLOWED_SUFFIXES:
         raise HTTPException(400, "Please upload a JPG, JPEG, or PNG image.")
@@ -54,19 +72,21 @@ async def predict_crop(
         pil_image = open_rgb_image(data)
     except (UnidentifiedImageError, OSError, ValueError):
         raise HTTPException(400, "The image could not be read. Please choose a clear JPG or PNG.")
-    token = f"{uuid.uuid4().hex}.jpg"
-    target = settings.uploads_dir / token
-    # Local JPEG compression keeps storage and API payloads small.
     pil_image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
-    pil_image.save(target, "JPEG", quality=82, optimize=True)
+    token = f"{uuid.uuid4().hex}.jpg" if persist_image else ""
+    target = settings.uploads_dir / token if token else None
+    if target is not None:
+        # Local JPEG compression keeps retained images and API payloads small.
+        pil_image.save(target, "JPEG", quality=82, optimize=True)
     try:
         model = get_crop_model()
         result = model.predict(pil_image, image.filename or "")
     except Exception:
-        logger.exception("Crop prediction failed for user=%s crop=%s", user.id, crop_id)
-        target.unlink(missing_ok=True)
+        logger.exception("Crop prediction failed for %s", log_context)
+        if target is not None:
+            target.unlink(missing_ok=True)
         raise HTTPException(503, "Crop analysis is temporarily unavailable. Check the model configuration.")
-    advisory = AdvisoryService().build(result.predicted_class, result.confidence, crop.crop_name, crop.crop_stage)
+    advisory = AdvisoryService().build(result.predicted_class, result.confidence, crop_name, crop_stage)
     confidence_label = advisory["confidence_label"]
     return DiagnosisPreview(
         **result.to_dict(), confidence_label=confidence_label, severity=advisory["severity"],
@@ -74,8 +94,24 @@ async def predict_crop(
     )
 
 
-@router.post("/save", response_model=DiagnosisOut, status_code=201)
-def save_diagnosis(payload: DiagnosisSave, db: Session = Depends(get_db), user: User = Depends(current_user)):
+@router.post("/predict", response_model=DiagnosisPreview)
+async def predict_crop(
+    farm_id: int = Form(...),
+    crop_id: int = Form(...),
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+):
+    return await analyze_crop_upload(farm_id, crop_id, image, db, user)
+
+
+@router.get("/supported-crops", response_model=list[str])
+def supported_crops():
+    return list(supported_crop_types())
+
+
+def persist_diagnosis(payload: DiagnosisSave, db: Session, user: User) -> CropDiagnosis:
+    """Validate and persist a retained diagnosis preview."""
     _owned_context(db, user.id, payload.farm_id, payload.crop_id)
     safe_token = Path(payload.image_token).name
     path = get_settings().uploads_dir / safe_token
@@ -94,6 +130,11 @@ def save_diagnosis(payload: DiagnosisSave, db: Session = Depends(get_db), user: 
     db.commit()
     db.refresh(diagnosis)
     return diagnosis
+
+
+@router.post("/save", response_model=DiagnosisOut, status_code=201)
+def save_diagnosis(payload: DiagnosisSave, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    return persist_diagnosis(payload, db, user)
 
 
 @router.get("/history", response_model=list[DiagnosisOut])

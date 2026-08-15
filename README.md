@@ -113,7 +113,11 @@ user query -> Ollama JSON-schema planner -> authenticated API tool -> observatio
 
 The default `OLLAMA_MODEL=gemma3:4b` means **Gemma 3 with 4 billion parameters**, which is the likely intended Ollama model when referring to "Gemma 4." The planner uses Ollama JSON-schema structured output instead of requiring model-specific native function calling, so the loop remains compatible with Gemma 3. You can substitute another local Ollama chat model through `OLLAMA_MODEL`.
 
-Agent tools currently cover dashboard summaries, farms, crops, crop diagnosis history, livestock, health history, medical records, vaccinations, alerts, farm/crop/animal creation, animal observations, medical/vaccination entries, and marking alerts read. Every call reuses the signed-in user's bearer token, so existing API ownership checks remain authoritative.
+Agent tools currently cover dashboard summaries, farms, crops, crop diagnosis history, livestock, health history, medical records, vaccinations, alerts, farm/crop/animal creation, farm/crop/animal updates and confirmed deletion, animal observations, medical/vaccination entries, and marking alerts read. Every call reuses the signed-in user's bearer token, so existing API ownership checks remain authoritative.
+
+The assistant's query bar accepts an optional JPG/PNG crop-image attachment. A plain request such as “Analyze this crop” runs a temporary, standalone screening through the same validated image model used by **Check Crop**, without requiring a farm/crop selection or adding anything to records. The assistant resolves a specific active crop and persists the image, diagnosis, and generated alerts only when the query explicitly asks to save, add, record, log, or store the result. Farm and livestock properties can be changed individually; explicit delete requests use exact name/tag confirmation and remove dependent owned records.
+
+Crop-cycle creation and renaming are limited to crop families derived directly from `knowledge/crop_diseases.json`: Apple, Bell Pepper, Blueberry, Cherry (including sour), Corn (maize), Grape, Orange, Peach, Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato. This allowlist is enforced by the API, the Farm Records controls, and the AI assistant; **Check Crop** uses the same list.
 
 ### Run services separately
 
@@ -194,14 +198,14 @@ The default preprocessing resizes to `IMAGE_SIZE` and scales RGB pixels to `[0,1
 |---|---|
 | System | `GET /health` |
 | Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
-| Farms | `GET/POST /farms`, `GET/PUT /farms/{id}` |
-| Crops | `GET/POST /crops`, `GET /crops/{id}` |
+| Farms | `GET/POST /farms`, `GET/PUT/PATCH/DELETE /farms/{id}` |
+| Crops | `GET/POST /crops`, `GET/PATCH/DELETE /crops/{id}` |
 | Diagnosis | `POST /diagnosis/predict`, `POST /diagnosis/save`, `GET /diagnosis/history`, `GET /diagnosis/{id}` |
-| Livestock | `GET/POST /livestock`, `GET/PUT /livestock/{id}` |
+| Livestock | `GET/POST /livestock`, `GET/PUT/PATCH/DELETE /livestock/{id}` |
 | Animal care | observation, history, medical-record, and vaccination routes under `/livestock/{id}` |
 | Alerts | `GET /alerts`, `PATCH /alerts/{id}/read` |
 | Dashboard | `GET /dashboard/summary` |
-| Agentic AI | `GET /agent/status`, `POST /agent/query` |
+| Agentic AI | `GET /agent/status`, `POST /agent/query`, `POST /agent/query-with-image` |
 
 Every farmer-data endpoint requires `Authorization: Bearer <token>`.
 

@@ -20,7 +20,7 @@ async def lifespan(_: FastAPI):
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version="1.0.0", description="Unified local-first crop and livestock health platform", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH"], allow_headers=["Authorization", "Content-Type"])
+app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 
 for router in (auth.router, farms.router, crops.router, diagnoses.router, livestock.router, alerts.router, dashboard.router, agent.router):
     app.include_router(router)
