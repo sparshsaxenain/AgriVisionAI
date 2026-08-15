@@ -4,7 +4,7 @@ from __future__ import annotations
 import streamlit as st
 
 from frontend.components.ui import api_error, apply_theme
-from frontend.pages import alerts, crop_diagnosis, crop_history, dashboard, farm_records, livestock
+from frontend.pages import alerts, assistant, crop_diagnosis, crop_history, dashboard, farm_records, livestock
 from frontend.utils.api_client import APIClient
 from frontend.utils.i18n import t
 
@@ -63,7 +63,7 @@ def main() -> None:
         language = language_codes[language_name]
         st.session_state.language = language
         pages = {
-            t("dashboard", language): "Dashboard", t("check_crop", language): "Check Crop",
+            "AI Assistant": "AI Assistant", t("dashboard", language): "Dashboard", t("check_crop", language): "Check Crop",
             t("diagnosis_history", language): "Diagnosis History", t("animals", language): "Animals & Health",
             t("farm_records", language): "Farm Records", t("alerts", language): "Alerts",
         }
@@ -78,7 +78,7 @@ def main() -> None:
                 del st.session_state[key]
             st.rerun()
     client = APIClient(st.session_state.token)
-    renderers = {"Dashboard": dashboard.render, "Check Crop": crop_diagnosis.render, "Diagnosis History": crop_history.render, "Animals & Health": livestock.render, "Farm Records": farm_records.render, "Alerts": alerts.render}
+    renderers = {"AI Assistant": assistant.render, "Dashboard": dashboard.render, "Check Crop": crop_diagnosis.render, "Diagnosis History": crop_history.render, "Animals & Health": livestock.render, "Farm Records": farm_records.render, "Alerts": alerts.render}
     renderers[st.session_state.page](client)
 
 

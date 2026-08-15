@@ -28,6 +28,11 @@ class Settings:
     use_mock_model: bool = _boolean("USE_MOCK_MODEL", True)
     image_size: int = int(os.getenv("IMAGE_SIZE", "224"))
     max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "8"))
+    ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+    ollama_model: str = os.getenv("OLLAMA_MODEL", "gemma3:4b")
+    agent_max_steps: int = int(os.getenv("AGENT_MAX_STEPS", "8"))
+    agent_timeout_seconds: int = int(os.getenv("AGENT_TIMEOUT_SECONDS", "180"))
+    agent_context_window: int = int(os.getenv("AGENT_CONTEXT_WINDOW", "8192"))
     uploads_dir: Path = ROOT_DIR / "data" / "uploads"
     knowledge_dir: Path = ROOT_DIR / "knowledge"
     cors_origins: tuple[str, ...] = tuple(
@@ -40,4 +45,3 @@ def get_settings() -> Settings:
     settings = Settings()
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     return settings
-

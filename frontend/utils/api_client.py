@@ -25,8 +25,9 @@ class APIClient:
 
     def request(self, method: str, path: str, **kwargs: Any) -> Any:
         headers = {**self.headers, **kwargs.pop("headers", {})}
+        timeout = kwargs.pop("timeout", 35)
         try:
-            response = requests.request(method, f"{BASE_URL}{path}", headers=headers, timeout=35, **kwargs)
+            response = requests.request(method, f"{BASE_URL}{path}", headers=headers, timeout=timeout, **kwargs)
         except requests.RequestException as exc:
             raise APIError("AgriVision service is not reachable. Start it with python run.py.") from exc
         if not response.ok:
@@ -48,4 +49,3 @@ class APIClient:
 
     def patch(self, path: str, **kwargs: Any) -> Any:
         return self.request("PATCH", path, **kwargs)
-

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from backend.api import alerts, auth, crops, dashboard, diagnoses, farms, livestock
+from backend.api import agent, alerts, auth, crops, dashboard, diagnoses, farms, livestock
 from backend.core.config import get_settings
 from backend.db.database import SessionLocal, init_db
 from backend.services.crop_inference import model_status
@@ -22,7 +22,7 @@ settings = get_settings()
 app = FastAPI(title=settings.app_name, version="1.0.0", description="Unified local-first crop and livestock health platform", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH"], allow_headers=["Authorization", "Content-Type"])
 
-for router in (auth.router, farms.router, crops.router, diagnoses.router, livestock.router, alerts.router, dashboard.router):
+for router in (auth.router, farms.router, crops.router, diagnoses.router, livestock.router, alerts.router, dashboard.router, agent.router):
     app.include_router(router)
 
 
@@ -42,4 +42,3 @@ def health():
 @app.get("/", include_in_schema=False)
 def root():
     return {"name": settings.app_name, "docs": "/docs", "health": "/health"}
-
