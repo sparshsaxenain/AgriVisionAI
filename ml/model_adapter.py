@@ -125,7 +125,12 @@ class MockCropModelAdapter(BaseCropModelAdapter):
     def preprocess(self, image: Image.Image) -> np.ndarray:
         return resize_to_array(image, 224)
 
-    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult:
+    def predict(
+        self,
+        image: Image.Image,
+        source_name: str = "",
+        ood_config: OODConfig | None = None,
+    ) -> PredictionResult:
         started = time.perf_counter()
         digest = hashlib.sha256((source_name or "demo").lower().encode()).digest()[0]
         # The default and tomato sample path reproduce the hackathon's scripted result.

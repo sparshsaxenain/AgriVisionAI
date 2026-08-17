@@ -1,11 +1,15 @@
 from PIL import Image
 
 from backend.services.advisory_service import AdvisoryService
-from ml.model_adapter import MockCropModelAdapter
+from ml.model_adapter import MockCropModelAdapter, OODConfig
 
 
 def test_mock_model_returns_normalized_prediction():
-    result = MockCropModelAdapter().predict(Image.new("RGB", (64, 64), "green"), "tomato_leaf.jpg")
+    result = MockCropModelAdapter().predict(
+        Image.new("RGB", (64, 64), "green"),
+        "tomato_leaf.jpg",
+        ood_config=OODConfig(),
+    )
     assert result.predicted_class == "Tomato___Early_blight"
     assert result.confidence == 0.946
     assert len(result.top_predictions) == 3
@@ -21,4 +25,3 @@ def test_advisory_maps_label_and_confidence():
 def test_low_confidence_escalates():
     advice = AdvisoryService().build("Tomato___Early_blight", 0.42)
     assert "expert verification" in advice["confidence_label"].lower()
-
