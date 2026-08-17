@@ -33,6 +33,8 @@ class Settings:
     agent_max_steps: int = int(os.getenv("AGENT_MAX_STEPS", "8"))
     agent_timeout_seconds: int = int(os.getenv("AGENT_TIMEOUT_SECONDS", "180"))
     agent_context_window: int = int(os.getenv("AGENT_CONTEXT_WINDOW", "8192"))
+    ood_confidence_threshold: float = float(os.getenv("OOD_CONFIDENCE_THRESHOLD", "0.45"))
+    ood_entropy_threshold: float = float(os.getenv("OOD_ENTROPY_THRESHOLD", "2.5"))
     uploads_dir: Path = ROOT_DIR / "data" / "uploads"
     knowledge_dir: Path = ROOT_DIR / "knowledge"
     cors_origins: tuple[str, ...] = tuple(

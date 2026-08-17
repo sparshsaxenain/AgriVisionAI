@@ -7,9 +7,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import time
 from abc import ABC, abstractmethod
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,45 @@ import numpy as np
 from PIL import Image
 
 from ml.preprocessing import resize_to_array
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class OODConfig:
+    """Tunable thresholds for out-of-distribution detection.
+
+    confidence_threshold: reject if max softmax probability < this value.
+    entropy_threshold: reject if softmax entropy > this value.
+        Max possible entropy for 38 classes = ln(38) ≈ 3.64.
+    """
+    confidence_threshold: float = 0.45
+    entropy_threshold: float = 2.5
+
+
+def ood_check(probabilities: np.ndarray, config: OODConfig) -> tuple[bool, str]:
+    """Two-layer out-of-distribution gate.
+
+    Returns (is_ood, reason).  reason is empty when the image is in-distribution.
+    """
+    max_conf = float(np.max(probabilities))
+
+    # Layer 1 — max softmax confidence
+    if max_conf < config.confidence_threshold:
+        logger.info("OOD detected: max_confidence=%.4f < threshold=%.4f",
+                     max_conf, config.confidence_threshold)
+        return True, "low_confidence"
+
+    # Layer 2 — softmax entropy
+    # Clip to avoid log(0); use natural log for interpretability.
+    clipped = np.clip(probabilities, 1e-12, 1.0)
+    entropy = float(-np.sum(clipped * np.log(clipped)))
+    if entropy > config.entropy_threshold:
+        logger.info("OOD detected: entropy=%.4f > threshold=%.4f",
+                     entropy, config.entropy_threshold)
+        return True, "high_entropy"
+
+    return False, ""
 
 
 @dataclass(frozen=True)
@@ -34,6 +74,8 @@ class PredictionResult:
     top_predictions: list[PredictionItem]
     model_version: str
     inference_time_ms: float
+    is_ood: bool = False
+    ood_reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -60,7 +102,7 @@ class BaseCropModelAdapter(ABC):
     def preprocess(self, image: Image.Image) -> Any: ...
 
     @abstractmethod
-    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult: ...
+    def predict(self, image: Image.Image, source_name: str = "", ood_config: OODConfig | None = None) -> PredictionResult: ...
 
     @property
     @abstractmethod
@@ -140,7 +182,7 @@ class PyTorchCropModelAdapter(BaseCropModelAdapter):
         # Defaults are intentionally neutral. Configure a custom adapter if training used normalization.
         return self._torch.from_numpy(array.transpose(2, 0, 1)).unsqueeze(0)
 
-    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult:
+    def predict(self, image: Image.Image, source_name: str = "", ood_config: OODConfig | None = None) -> PredictionResult:
         started = time.perf_counter()
         tensor = self.preprocess(image)
         with self._torch.no_grad():
@@ -150,14 +192,35 @@ class PyTorchCropModelAdapter(BaseCropModelAdapter):
         if hasattr(output, "logits"):
             output = output.logits
         probabilities = self._torch.softmax(output, dim=-1)[0].cpu().numpy()
+        elapsed = round((time.perf_counter() - started) * 1000, 1)
+
+        # --- OOD gate ---
+        if ood_config is not None:
+            is_ood, reason = ood_check(probabilities, ood_config)
+        else:
+            is_ood, reason = False, ""
+
         order = np.argsort(probabilities)[::-1][:3]
         top = [
             PredictionItem(self.class_names[i], friendly_name(self.class_names[i]), float(probabilities[i]))
             for i in order
         ]
+
+        if is_ood:
+            return PredictionResult(
+                predicted_class="out_of_distribution",
+                display_name="Unrecognized Image",
+                confidence=top[0].confidence,
+                top_predictions=top,
+                model_version=self.model_path.name,
+                inference_time_ms=elapsed,
+                is_ood=True,
+                ood_reason=reason,
+            )
+
         return PredictionResult(
             top[0].class_name, top[0].display_name, top[0].confidence, top,
-            self.model_path.name, round((time.perf_counter() - started) * 1000, 1),
+            self.model_path.name, elapsed,
         )
 
 
@@ -180,14 +243,35 @@ class KerasCropModelAdapter(BaseCropModelAdapter):
     def preprocess(self, image: Image.Image) -> np.ndarray:
         return np.expand_dims(resize_to_array(image, self.image_size), axis=0)
 
-    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult:
+    def predict(self, image: Image.Image, source_name: str = "", ood_config: OODConfig | None = None) -> PredictionResult:
         started = time.perf_counter()
         raw = np.asarray(self.model.predict(self.preprocess(image), verbose=0))[0]
         exp = np.exp(raw - np.max(raw))
         probabilities = exp / exp.sum()
+        elapsed = round((time.perf_counter() - started) * 1000, 1)
+
+        # --- OOD gate ---
+        if ood_config is not None:
+            is_ood, reason = ood_check(probabilities, ood_config)
+        else:
+            is_ood, reason = False, ""
+
         order = np.argsort(probabilities)[::-1][:3]
         top = [PredictionItem(self.class_names[i], friendly_name(self.class_names[i]), float(probabilities[i])) for i in order]
-        return PredictionResult(top[0].class_name, top[0].display_name, top[0].confidence, top, self.model_path.name, round((time.perf_counter() - started) * 1000, 1))
+
+        if is_ood:
+            return PredictionResult(
+                predicted_class="out_of_distribution",
+                display_name="Unrecognized Image",
+                confidence=top[0].confidence,
+                top_predictions=top,
+                model_version=self.model_path.name,
+                inference_time_ms=elapsed,
+                is_ood=True,
+                ood_reason=reason,
+            )
+
+        return PredictionResult(top[0].class_name, top[0].display_name, top[0].confidence, top, self.model_path.name, elapsed)
 
 
 class MobileNetV3CropModelAdapter(BaseCropModelAdapter):
@@ -249,20 +333,41 @@ class MobileNetV3CropModelAdapter(BaseCropModelAdapter):
         ])
         return transform(image.convert("RGB")).unsqueeze(0)
 
-    def predict(self, image: Image.Image, source_name: str = "") -> PredictionResult:
+    def predict(self, image: Image.Image, source_name: str = "", ood_config: OODConfig | None = None) -> PredictionResult:
         started = time.perf_counter()
         tensor = self.preprocess(image)
         with self._torch.no_grad():
             output = self.model(tensor)
         probabilities = self._torch.softmax(output, dim=-1)[0].cpu().numpy()
+        elapsed = round((time.perf_counter() - started) * 1000, 1)
+
+        # --- OOD gate ---
+        if ood_config is not None:
+            is_ood, reason = ood_check(probabilities, ood_config)
+        else:
+            is_ood, reason = False, ""
+
         order = np.argsort(probabilities)[::-1][:3]
         top = [
             PredictionItem(self.class_names[i], friendly_name(self.class_names[i]), float(probabilities[i]))
             for i in order
         ]
+
+        if is_ood:
+            return PredictionResult(
+                predicted_class="out_of_distribution",
+                display_name="Unrecognized Image",
+                confidence=top[0].confidence,
+                top_predictions=top,
+                model_version=self.model_path.name,
+                inference_time_ms=elapsed,
+                is_ood=True,
+                ood_reason=reason,
+            )
+
         return PredictionResult(
             top[0].class_name, top[0].display_name, top[0].confidence, top,
-            self.model_path.name, round((time.perf_counter() - started) * 1000, 1),
+            self.model_path.name, elapsed,
         )
 
 

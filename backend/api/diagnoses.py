@@ -19,6 +19,7 @@ from backend.services.advisory_service import AdvisoryService
 from backend.services.alert_service import create_crop_alerts
 from backend.services.crop_inference import get_crop_model
 from backend.services.crop_catalog import supported_crop_types
+from ml.model_adapter import OODConfig
 from ml.preprocessing import open_rgb_image
 
 router = APIRouter(prefix="/diagnosis", tags=["Crop Diagnosis"])
@@ -60,7 +61,7 @@ async def analyze_image_upload(
     persist_image: bool = False,
     log_context: str = "standalone image",
 ) -> DiagnosisPreview:
-    """Run validated crop inference, optionally retaining the image for persistence."""
+    """Run validated crop inference with OOD detection."""
     suffix = Path(image.filename or "").suffix.lower()
     if suffix not in ALLOWED_SUFFIXES:
         raise HTTPException(400, "Please upload a JPG, JPEG, or PNG image.")
@@ -73,20 +74,32 @@ async def analyze_image_upload(
     except (UnidentifiedImageError, OSError, ValueError):
         raise HTTPException(400, "The image could not be read. Please choose a clear JPG or PNG.")
     pil_image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
-    token = f"{uuid.uuid4().hex}.jpg" if persist_image else ""
-    target = settings.uploads_dir / token if token else None
-    if target is not None:
-        # Local JPEG compression keeps retained images and API payloads small.
-        pil_image.save(target, "JPEG", quality=82, optimize=True)
+
+    # Build OOD config from application settings.
+    ood_config = OODConfig(
+        confidence_threshold=settings.ood_confidence_threshold,
+        entropy_threshold=settings.ood_entropy_threshold,
+    )
+
     try:
         model = get_crop_model()
-        result = model.predict(pil_image, image.filename or "")
+        result = model.predict(pil_image, image.filename or "", ood_config=ood_config)
     except Exception:
         logger.exception("Crop prediction failed for %s", log_context)
-        if target is not None:
-            target.unlink(missing_ok=True)
         raise HTTPException(503, "Crop analysis is temporarily unavailable. Check the model configuration.")
-    advisory = AdvisoryService().build(result.predicted_class, result.confidence, crop_name, crop_stage)
+
+    # Don't persist images for OOD results — they have no diagnostic value.
+    token = ""
+    target = None
+    if not result.is_ood and persist_image:
+        token = f"{uuid.uuid4().hex}.jpg"
+        target = settings.uploads_dir / token
+        pil_image.save(target, "JPEG", quality=82, optimize=True)
+
+    advisory = AdvisoryService().build(
+        result.predicted_class, result.confidence,
+        crop_name, crop_stage, is_ood=result.is_ood,
+    )
     confidence_label = advisory["confidence_label"]
     return DiagnosisPreview(
         **result.to_dict(), confidence_label=confidence_label, severity=advisory["severity"],

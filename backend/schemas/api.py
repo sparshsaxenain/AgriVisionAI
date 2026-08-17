@@ -145,6 +145,8 @@ class DiagnosisPreview(BaseModel):
     advisory: dict[str, Any]
     image_token: str
     mock_mode: bool = False
+    is_ood: bool = False
+    ood_reason: str = ""
 
 
 class DiagnosisSave(BaseModel):
