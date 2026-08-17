@@ -22,7 +22,35 @@ class AdvisoryService:
         }
         return aliases.get(label.strip().lower(), label)
 
-    def build(self, predicted_class: str, confidence: float, crop_name: str = "", crop_stage: str = "") -> dict:
+    def build(self, predicted_class: str, confidence: float, crop_name: str = "", crop_stage: str = "", is_ood: bool = False) -> dict:
+        # --- OOD advisory: image is not a recognized crop leaf ---
+        if is_ood:
+            return {
+                "display_name": "Unrecognized Image",
+                "condition": "Unrecognized Image",
+                "confidence_label": "Unable to diagnose",
+                "severity": "unknown",
+                "description": (
+                    "The uploaded image does not appear to be a plant leaf that our system "
+                    "can analyze. Our model currently supports disease detection for: "
+                    "Apple, Blueberry, Cherry, Corn, Grape, Orange, Peach, Pepper, "
+                    "Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato."
+                ),
+                "recommended_actions": [
+                    "Please upload a clear, close-up photo of a single plant leaf.",
+                    "Make sure the leaf fills most of the image frame.",
+                    "Ensure good lighting and avoid blurry or dark images.",
+                    "If your crop is not in the supported list, please consult a local agricultural expert.",
+                ],
+                "when_to_contact_expert": (
+                    "Our system cannot diagnose this image. Please consult an agricultural "
+                    "extension officer or plant pathologist for assistance."
+                ),
+                "crop_context": crop_name,
+                "stage_context": crop_stage,
+                "safety_note": self.config["safety_note"],
+            }
+
         label = self.normalize_label(predicted_class)
         advice = deepcopy(self.diseases.get(label, self.diseases["default"]))
         high = self.config["confidence_thresholds"]["high"]
