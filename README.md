@@ -2,7 +2,7 @@
 
 **One farmer, one application—complete crop and livestock health visibility.**
 
-AgriVision AI is a complete, local-first hackathon platform that brings crop disease screening, practical crop advice, livestock health monitoring, medical records, vaccination reminders, alerts, and farm analytics into one farmer-friendly application.
+AgriVision AI is a complete hackathon platform that brings crop disease screening, practical crop advice, livestock health monitoring, medical records, vaccination reminders, alerts, and farm analytics into one farmer-friendly application.
 
 The supplied crop model is not trained or embedded here. It connects through a replaceable inference adapter. Until that artifact arrives, deterministic demo mode keeps the entire workflow—including image upload, persistence, advice, history, and alerts—working offline.
 
@@ -23,11 +23,11 @@ Marginal farmers often have to navigate separate agricultural and veterinary too
 - Medical timeline and vaccination reminders
 - Automatic crop and animal-health alerts
 - Dashboard KPIs and Plotly charts
-- English interface plus Hindi and Tamil navigation examples
-- Local SQLite storage and no required external services
+- Full English and Hindi interfaces plus Tamil navigation examples
+- Local SQLite storage with NVIDIA NIM powering the natural-language assistant
 - REST API and interactive OpenAPI documentation
 - Natural-language LangGraph agent that reads and updates records through authenticated API tools
-- Fully local Ollama inference with a Gemma-family default and no cloud LLM key
+- NVIDIA NIM inference with a structured-output Nemotron default
 
 ## Architecture
 
@@ -41,8 +41,9 @@ Streamlit UI ── authenticated HTTP ──► FastAPI
                  ▼                       ▼                        ▼
           SQLAlchemy / SQLite     Advisory & risk rules    Crop model adapter
           farms, crops, animals   local JSON knowledge     mock / PyTorch / Keras
-                 │                                                │
-                 └──────── local uploads and records ─────────────┘
+                                         │
+                                         ▼
+                              NVIDIA NIM / LangGraph agent
 ```
 
 The Streamlit layer contains presentation only. FastAPI owns authorization and workflows. SQLAlchemy relationships preserve farmer-level data boundaries. Model-specific tensors stop at `PredictionResult`; everything else consumes normalized labels, confidences, top predictions, version, and inference time.
@@ -67,7 +68,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 Copy-Item .env.example .env
-ollama pull gemma3:4b
+# Set NVIDIA_API_KEY in .env
 python scripts\seed_database.py
 python run.py
 ```
@@ -80,14 +81,14 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 cp .env.example .env
-ollama pull gemma3:4b
+# Set NVIDIA_API_KEY in .env
 python scripts/seed_database.py
 python run.py
 ```
 
 Open [http://localhost:8501](http://localhost:8501). `run.py` seeds missing demo data, starts the API and interface, opens the browser, and stops both processes together on Ctrl+C.
 
-Install and start [Ollama](https://docs.ollama.com/quickstart) before using the AI Assistant. The Ollama desktop app normally starts the service automatically; otherwise run `ollama serve` in another terminal.
+Generate an NVIDIA API Catalog key, place it in `NVIDIA_API_KEY`, and keep the default hosted endpoint. To use a self-hosted NIM instead, set `NVIDIA_NIM_BASE_URL` to its OpenAI-compatible `/v1` endpoint; an API key is optional for endpoints that do not require authentication.
 
 ## Agentic AI assistant
 
@@ -104,14 +105,16 @@ Mark my vaccination alert as read.
 The implementation is an explicit LangGraph loop:
 
 ```text
-user query -> Ollama JSON-schema planner -> authenticated API tool -> observation
+user query -> NVIDIA NIM JSON-schema planner -> authenticated API tool -> observation
                   ^                                              |
                   +---------------- plan next step ---------------+
                                       |
                                 verified answer
 ```
 
-The default `OLLAMA_MODEL=gemma3:4b` means **Gemma 3 with 4 billion parameters**, which is the likely intended Ollama model when referring to "Gemma 4." The planner uses Ollama JSON-schema structured output instead of requiring model-specific native function calling, so the loop remains compatible with Gemma 3. You can substitute another local Ollama chat model through `OLLAMA_MODEL`.
+The default `NVIDIA_NIM_MODEL=nvidia/nemotron-3-nano-30b-a3b` supports structured output and agentic workloads. `ChatNVIDIA` uses NIM's OpenAI-compatible API and JSON-schema generation, while `NVIDIA_NIM_MODEL` and `NVIDIA_NIM_BASE_URL` keep hosted and self-hosted deployments interchangeable.
+
+The UI sends the selected language with every assistant and crop-analysis request. When Hindi is selected, the planner is explicitly required to return its answer in natural Hindi written in Devanagari, regardless of the language used in the query. NIM also translates the user-facing crop condition, confidence wording, and advisory into Hindi while the canonical result remains unchanged for rules and storage; saved Hindi localizations are retained with diagnosis history.
 
 Agent tools currently cover dashboard summaries, farms, crops, crop diagnosis history, livestock, health history, medical records, vaccinations, alerts, farm/crop/animal creation, farm/crop/animal updates and confirmed deletion, animal observations, medical/vaccination entries, and marking alerts read. Every call reuses the signed-in user's bearer token, so existing API ownership checks remain authoritative.
 
@@ -162,11 +165,12 @@ Copy `.env.example` to `.env`.
 | `SECRET_KEY` | JWT signing key; change outside local demo | development value |
 | `API_BASE_URL` | URL used by Streamlit | `http://localhost:8000` |
 | `CORS_ORIGINS` | Comma-separated allowed browser origins | `http://localhost:8501` |
-| `OLLAMA_BASE_URL` | Local Ollama server | `http://localhost:11434` |
-| `OLLAMA_MODEL` | Local planning model | `gemma3:4b` |
+| `NVIDIA_API_KEY` | NVIDIA API Catalog key (optional for unauthenticated self-hosted NIM) | empty |
+| `NVIDIA_NIM_BASE_URL` | Hosted or self-hosted NIM `/v1` endpoint | `https://integrate.api.nvidia.com/v1` |
+| `NVIDIA_NIM_MODEL` | NIM planning model | `nvidia/nemotron-3-nano-30b-a3b` |
+| `NVIDIA_NIM_MAX_TOKENS` | Maximum planner completion tokens | `768` |
 | `AGENT_MAX_STEPS` | Maximum planner iterations per query | `8` |
-| `AGENT_TIMEOUT_SECONDS` | Ollama and internal API timeout | `180` |
-| `AGENT_CONTEXT_WINDOW` | Ollama context window requested by the planner | `8192` |
+| `AGENT_TIMEOUT_SECONDS` | Internal agent API timeout | `180` |
 
 ## Supplied model integration
 
@@ -213,7 +217,7 @@ Every farmer-data endpoint requires `Authorization: Bearer <token>`.
 
 ```text
 backend/             FastAPI routes, configuration, ORM models, schemas, services
-backend/agent/       LangGraph planner, Ollama integration, and authenticated API tools
+backend/agent/       LangGraph planner, NVIDIA NIM integration, and authenticated API tools
 frontend/            Streamlit app, farmer pages, shared UI, API client, translations
 knowledge/           Crop advice, animal rules, and vaccination schedules
 ml/                  Framework adapters, preprocessing, normalized inference contract
@@ -252,10 +256,9 @@ Add final presentation captures here after running on the target display:
 ## Future improvements
 
 - Connect the supplied, validated crop model and its exact preprocessing
-- Complete translations of all domain content and add voice guidance
+- Add voice guidance and expand Tamil domain translations
 - PostgreSQL migrations with Alembic for multi-device deployment
 - Background vaccination-alert refresh and optional SMS delivery
 - Role-based agricultural/veterinary expert review
-- Optional record-grounded LLM assistant behind a disabled-by-default service
 - Grad-CAM overlays for compatible vision architectures
 - PWA/offline capture synchronization if a web client is later added

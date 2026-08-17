@@ -145,6 +145,7 @@ class DiagnosisPreview(BaseModel):
     advisory: dict[str, Any]
     image_token: str
     mock_mode: bool = False
+    localized: dict[str, Any] | None = None
 
 
 class DiagnosisSave(BaseModel):

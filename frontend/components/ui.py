@@ -5,6 +5,8 @@ import html
 
 import streamlit as st
 
+from frontend.utils.i18n import t
+
 
 def apply_theme() -> None:
     st.markdown("""
@@ -30,14 +32,13 @@ def apply_theme() -> None:
 
 
 def page_title(title: str, subtitle: str) -> None:
-    st.markdown(f"<div class='ag-eyebrow'>AgriVision AI</div><h1 style='margin:.15rem 0'>{html.escape(title)}</h1><p class='ag-muted'>{html.escape(subtitle)}</p>", unsafe_allow_html=True)
+    st.markdown(f"<div class='ag-eyebrow'>AgriVision AI</div><h1 style='margin:.15rem 0'>{html.escape(t(title))}</h1><p class='ag-muted'>{html.escape(t(subtitle))}</p>", unsafe_allow_html=True)
 
 
 def card(title: str, body: str, chip: str = "", severity: str = "") -> None:
-    chip_html = f"<span class='ag-chip {html.escape(severity)}'>{html.escape(chip)}</span>" if chip else ""
-    st.markdown(f"<div class='ag-card'>{chip_html}<h3 style='margin:.55rem 0 .25rem'>{html.escape(title)}</h3><div class='ag-muted'>{html.escape(body)}</div></div>", unsafe_allow_html=True)
+    chip_html = f"<span class='ag-chip {html.escape(severity)}'>{html.escape(t(chip))}</span>" if chip else ""
+    st.markdown(f"<div class='ag-card'>{chip_html}<h3 style='margin:.55rem 0 .25rem'>{html.escape(t(title))}</h3><div class='ag-muted'>{html.escape(t(body))}</div></div>", unsafe_allow_html=True)
 
 
 def api_error(exc: Exception) -> None:
     st.error(str(exc), icon="⚠️")
-

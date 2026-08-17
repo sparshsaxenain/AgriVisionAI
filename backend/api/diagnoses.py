@@ -4,12 +4,15 @@ import json
 import logging
 import uuid
 from pathlib import Path
+from typing import Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
+from backend.agent import get_agent_service
 from backend.api.deps import current_user
 from backend.core.config import get_settings
 from backend.db.database import get_db
@@ -98,11 +101,22 @@ async def analyze_image_upload(
 async def predict_crop(
     farm_id: int = Form(...),
     crop_id: int = Form(...),
+    language: Literal["en", "hi", "ta"] = Form(default="en"),
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ):
-    return await analyze_crop_upload(farm_id, crop_id, image, db, user)
+    preview = await analyze_crop_upload(farm_id, crop_id, image, db, user)
+    if language == "hi":
+        try:
+            preview.localized = await run_in_threadpool(
+                get_agent_service().localize_diagnosis,
+                preview,
+                language,
+            )
+        except Exception:
+            logger.exception("Hindi crop-result localization failed for user=%s", user.id)
+    return preview
 
 
 @router.get("/supported-crops", response_model=list[str])
