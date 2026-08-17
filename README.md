@@ -1,264 +1,355 @@
 # AgriVision AI
 
-**One farmer, one application—complete crop and livestock health visibility.**
+> **One farmer, one application — complete crop and livestock health visibility.**
 
-AgriVision AI is a complete hackathon platform that brings crop disease screening, practical crop advice, livestock health monitoring, medical records, vaccination reminders, alerts, and farm analytics into one farmer-friendly application.
+AgriVision AI is a local-first farm health platform that combines crop disease screening, practical advisories, livestock health monitoring, vaccination reminders, farm records, alerts, analytics, and an agentic AI assistant in one farmer-friendly application.
 
-The supplied crop model is not trained or embedded here. It connects through a replaceable inference adapter. Until that artifact arrives, deterministic demo mode keeps the entire workflow—including image upload, persistence, advice, history, and alerts—working offline.
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Tests](https://img.shields.io/badge/tests-40%20passed-brightgreen)](#testing)
 
-## Problem
+## The problem
 
-Marginal farmers often have to navigate separate agricultural and veterinary tools, inconsistent connectivity, and limited specialist access. AgriVision combines the most frequent crop and animal-health workflows in one low-bandwidth interface while being explicit that AI screening is preliminary guidance, not a substitute for a qualified agricultural officer or veterinarian.
+Small and marginal farmers often manage crop health, animal health, vaccination schedules, and farm records through disconnected tools or paper notes. Specialist help may not be immediately available, internet connectivity may be unreliable, and early warning signs can be missed.
 
-## What works
+AgriVision AI brings these workflows together without pretending that AI replaces an agricultural officer or veterinarian. It provides preliminary screening, explainable risk indicators, practical next steps, and clear escalation guidance.
 
-- Secure registration, login, logout, and seeded demo account
-- Multiple farms and crop cycles
-- Validated JPG/PNG crop upload with local compression
-- Mock, PyTorch/TorchScript, and Keras model adapters behind one result contract
-- Top-three predictions, calibrated confidence wording, and low-confidence escalation
-- Offline JSON crop advisory knowledge base
-- Saved diagnosis history and crop analytics
-- Livestock registry, health observations, and explainable JSON-driven risk scoring
-- Medical timeline and vaccination reminders
-- Automatic crop and animal-health alerts
-- Dashboard KPIs and Plotly charts
-- Full English and Hindi interfaces plus Tamil navigation examples
-- Local SQLite storage with NVIDIA NIM powering the natural-language assistant
-- REST API and interactive OpenAPI documentation
-- Natural-language LangGraph agent that reads and updates records through authenticated API tools
-- NVIDIA NIM inference with a structured-output Nemotron default
+## The solution at a glance
+
+| Farmer need | AgriVision AI response |
+|---|---|
+| Identify a crop problem quickly | Validated leaf-image upload, top-three predictions, confidence, severity, and contextual advice |
+| Avoid incorrect image predictions | Confidence- and entropy-based out-of-distribution detection for real models |
+| Know when an animal needs attention | Explainable, JSON-driven health-risk scoring from symptoms and observations |
+| Never miss animal-care tasks | Vaccination timeline, due/overdue status, reminders, and alerts |
+| Keep farm information in one place | Secure farms, crop cycles, livestock, diagnoses, observations, and medical records |
+| Ask questions naturally | NVIDIA NIM + LangGraph assistant that reads and updates records through authenticated tools |
+| Work with limited connectivity | Local SQLite storage, local knowledge rules, and local crop inference; only the AI assistant requires NIM access |
+| Support regional users | English and Hindi interfaces, Tamil navigation support, and language-aware assistant responses |
+
+## Key features
+
+### Crop intelligence
+
+- JPG, JPEG, and PNG validation with an 8 MB upload limit
+- Local image resizing, compression, randomized filenames, and safe storage
+- 38 disease/healthy output classes covering 14 crop families
+- Top-three predictions with confidence-aware wording
+- Out-of-distribution detection using confidence and prediction entropy
+- Crop- and growth-stage-aware recommendations from a local JSON knowledge base
+- Diagnosis history, repeated-issue alerts, and expert-escalation guidance
+- Replaceable mock, PyTorch, MobileNetV3, and Keras model adapters
+
+Supported crop families: **Apple, Bell Pepper, Blueberry, Cherry, Corn, Grape, Orange, Peach, Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato.**
+
+### Livestock health
+
+- Livestock registry with unique tag IDs and farm association
+- Health observations for temperature, appetite, activity, respiration, injuries, and other symptoms
+- Explainable low/moderate/high risk scores driven by editable rules
+- Automatic warning or critical alerts for concerning observations
+- Medical-record timeline and vaccination history
+- Due-soon and overdue vaccination tracking across all animals
+
+### Agentic farm assistant
+
+- Natural-language access to farm, crop, livestock, diagnosis, vaccination, and alert data
+- 24 read/write tools executed through the application's authenticated REST API
+- Multi-step LangGraph planner with NVIDIA NIM structured output
+- User-scoped conversational memory and bearer-token authorization
+- Safe mutation behavior: the assistant resolves record IDs before writes and requires exact confirmation for deletion
+- Optional crop-image attachment for quick analysis or explicit persistence to a crop record
+- English, Hindi, and Tamil response instructions
+
+Example requests:
+
+```text
+Which animals need attention and what should I do next?
+Show every vaccination that is due.
+Add a 0.75 acre tomato crop at Green Valley Farm, seedling stage.
+Record Lakshmi's temperature as 40.2 C with low appetite and low activity.
+Analyze this crop image, but do not save it.
+Save this diagnosis to Green Valley Farm's tomato crop.
+```
+
+### Farm operations and insights
+
+- Secure registration and sign-in with JWT-based authorization
+- Multiple farms and crop cycles per farmer
+- Dashboard KPIs, recent diagnoses, upcoming animal-care tasks, alerts, and Plotly charts
+- Create, update, and confirmed-delete workflows with ownership checks
+- Automatic cascading cleanup of dependent records
+- Interactive OpenAPI documentation for every backend workflow
 
 ## Architecture
 
-```text
-Farmer browser
-    │
-    ▼
-Streamlit UI ── authenticated HTTP ──► FastAPI
-                                         │
-                 ┌───────────────────────┼────────────────────────┐
-                 ▼                       ▼                        ▼
-          SQLAlchemy / SQLite     Advisory & risk rules    Crop model adapter
-          farms, crops, animals   local JSON knowledge     mock / PyTorch / Keras
-                                         │
-                                         ▼
-                              NVIDIA NIM / LangGraph agent
+```mermaid
+flowchart LR
+    U[Farmer] --> UI[Streamlit interface]
+    UI -->|JWT-authenticated HTTP| API[FastAPI service]
+
+    API --> DB[(SQLAlchemy + SQLite)]
+    API --> KB[Local JSON knowledge and risk rules]
+    API --> ML[Crop model adapter]
+    API --> AG[LangGraph agent]
+
+    ML --> M1[Deterministic demo model]
+    ML --> M2[PyTorch / MobileNetV3 / Keras]
+    AG --> NIM[NVIDIA NIM]
+    AG -->|Authenticated tools| API
 ```
 
-The Streamlit layer contains presentation only. FastAPI owns authorization and workflows. SQLAlchemy relationships preserve farmer-level data boundaries. Model-specific tensors stop at `PredictionResult`; everything else consumes normalized labels, confidences, top predictions, version, and inference time.
+The frontend is presentation-focused. FastAPI owns authorization, validation, business rules, inference orchestration, and persistence. Framework-specific model behavior ends at a normalized `PredictionResult`, so the rest of the system does not need to change when the model changes.
 
-## Technology
+The assistant does not access the database directly. Every tool call passes through the same authenticated API and ownership checks used by the user interface.
 
-- Python 3.11+
-- Streamlit and Plotly
-- FastAPI, Pydantic, Uvicorn
-- SQLAlchemy 2 and SQLite (change `DATABASE_URL` for PostgreSQL later)
-- Pillow and NumPy
-- bcrypt password hashing and signed JWT access tokens
-- pytest and FastAPI TestClient
+## Technology stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Streamlit, Plotly, Pandas |
+| Backend | FastAPI, Pydantic, Uvicorn |
+| Database | SQLAlchemy 2, SQLite |
+| AI agent | LangGraph, LangChain, NVIDIA NIM |
+| Computer vision | PyTorch, TorchVision, Pillow, NumPy |
+| Security | bcrypt password hashing, signed JWT access tokens |
+| Knowledge layer | Versioned JSON crop, livestock, and vaccination rules |
+| Testing | pytest, FastAPI TestClient |
 
 ## Quick start
+
+### Prerequisites
+
+- Python 3.11 or newer
+- `pip`
+- An NVIDIA API key only if you want to use the AI assistant with the hosted NIM endpoint
+
+All crop, livestock, dashboard, record, and alert workflows work locally without an NVIDIA key.
 
 ### Windows PowerShell
 
 ```powershell
+git clone <repository-url>
+cd <repository-folder>
+
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+
 Copy-Item .env.example .env
-# Set NVIDIA_API_KEY in .env
-python scripts\seed_database.py
+# Optional: add NVIDIA_API_KEY to .env for the AI assistant
+
 python run.py
 ```
 
 ### macOS / Linux
 
 ```bash
+git clone <repository-url>
+cd <repository-folder>
+
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+
 cp .env.example .env
-# Set NVIDIA_API_KEY in .env
-python scripts/seed_database.py
+# Optional: add NVIDIA_API_KEY to .env for the AI assistant
+
 python run.py
 ```
 
-Open [http://localhost:8501](http://localhost:8501). `run.py` seeds missing demo data, starts the API and interface, opens the browser, and stops both processes together on Ctrl+C.
+`run.py` initializes the database, adds missing demo data, starts both services, and opens the farmer interface.
 
-Generate an NVIDIA API Catalog key, place it in `NVIDIA_API_KEY`, and keep the default hosted endpoint. To use a self-hosted NIM instead, set `NVIDIA_NIM_BASE_URL` to its OpenAI-compatible `/v1` endpoint; an API key is optional for endpoints that do not require authentication.
+| Service | URL |
+|---|---|
+| Farmer interface | <http://localhost:8501> |
+| Interactive API documentation | <http://localhost:8000/docs> |
+| API health check | <http://localhost:8000/health> |
 
-## Agentic AI assistant
+Press `Ctrl+C` in the launcher terminal to stop both services.
 
-Open **AI Assistant** after signing in and type the outcome you want. Examples:
+### Run the services separately
 
-```text
-Which animals need attention and what should I do next?
-Show vaccinations due for Lakshmi.
-Add a 0.75 acre tomato crop at Green Valley Farm, seedling stage.
-Record Lakshmi's temperature as 40.2 C with low appetite and low activity.
-Mark my vaccination alert as read.
+Seed the database once:
+
+```bash
+python scripts/seed_database.py
 ```
 
-The implementation is an explicit LangGraph loop:
-
-```text
-user query -> NVIDIA NIM JSON-schema planner -> authenticated API tool -> observation
-                  ^                                              |
-                  +---------------- plan next step ---------------+
-                                      |
-                                verified answer
-```
-
-The default `NVIDIA_NIM_MODEL=nvidia/nemotron-3-nano-30b-a3b` supports structured output and agentic workloads. `ChatNVIDIA` uses NIM's OpenAI-compatible API and JSON-schema generation, while `NVIDIA_NIM_MODEL` and `NVIDIA_NIM_BASE_URL` keep hosted and self-hosted deployments interchangeable.
-
-The UI sends the selected language with every assistant and crop-analysis request. When Hindi is selected, the planner is explicitly required to return its answer in natural Hindi written in Devanagari, regardless of the language used in the query. NIM also translates the user-facing crop condition, confidence wording, and advisory into Hindi while the canonical result remains unchanged for rules and storage; saved Hindi localizations are retained with diagnosis history.
-
-Agent tools currently cover dashboard summaries, farms, crops, crop diagnosis history, livestock, health history, medical records, vaccinations, alerts, farm/crop/animal creation, farm/crop/animal updates and confirmed deletion, animal observations, medical/vaccination entries, and marking alerts read. Every call reuses the signed-in user's bearer token, so existing API ownership checks remain authoritative.
-
-The assistant's query bar accepts an optional JPG/PNG crop-image attachment. A plain request such as “Analyze this crop” runs a temporary, standalone screening through the same validated image model used by **Check Crop**, without requiring a farm/crop selection or adding anything to records. The assistant resolves a specific active crop and persists the image, diagnosis, and generated alerts only when the query explicitly asks to save, add, record, log, or store the result. Farm and livestock properties can be changed individually; explicit delete requests use exact name/tag confirmation and remove dependent owned records.
-
-Crop-cycle creation and renaming are limited to crop families derived directly from `knowledge/crop_diseases.json`: Apple, Bell Pepper, Blueberry, Cherry (including sour), Corn (maize), Grape, Orange, Peach, Potato, Raspberry, Soybean, Squash, Strawberry, and Tomato. This allowlist is enforced by the API, the Farm Records controls, and the AI assistant; **Check Crop** uses the same list.
-
-### Run services separately
-
-Terminal 1:
+Start the API:
 
 ```bash
 python -m uvicorn backend.main:app --reload
 ```
 
-Terminal 2:
+In another terminal, start the interface:
 
 ```bash
 python -m streamlit run frontend/app.py
 ```
 
-- Farmer interface: [http://localhost:8501](http://localhost:8501)
-- API documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Health check: [http://localhost:8000/health](http://localhost:8000/health)
-
 ## Demo account
+
+The idempotent seed script creates a complete demo farm with three active crops, seven animals, medical and vaccination records, a historical crop diagnosis, and dashboard alerts.
 
 ```text
 Email: farmer@example.com
 Password: demo123
 ```
 
-The seed is idempotent and immediately provides Ravi Kumar, Green Valley Farm, three active crops, seven animals, medical history, vaccination tasks, a historical diagnosis, and two dashboard alerts.
+> The demo password and default signing key are for local evaluation only. Change both before any shared or production deployment.
 
-## Environment variables
+## Five-minute hackathon demo
 
-Copy `.env.example` to `.env`.
+1. Sign in with the demo account and open the dashboard to show the unified farm overview.
+2. Open **Check Crop**, select **Green Valley Farm → Tomato**, and upload a valid leaf image.
+3. Review the top prediction, confidence, severity, immediate actions, prevention advice, and escalation guidance.
+4. Save the result and open **Diagnosis History** to demonstrate persistence and alert generation.
+5. Open **Animals & Health** and choose **Lakshmi (`COW-101`)**.
+6. Record `40.2 °C`, **Low** appetite, and **Low** activity. The explainable rules produce score `7`, **High risk**, veterinary guidance, and a critical alert.
+7. Open **AI Assistant** and ask: `Which animals need attention, and what vaccinations are due?`
+8. Finish by showing `/docs` and `/health` to demonstrate the production-style API boundary and model status.
 
-| Variable | Purpose | Default |
+With `USE_MOCK_MODEL=true`, an ordinary crop image intentionally returns a deterministic Tomato Early Blight result so the complete workflow remains demonstrable without a model artifact.
+
+## Configuration
+
+Copy [`.env.example`](.env.example) to `.env` and adjust the values for your environment.
+
+| Variable | Purpose | Sample/default behavior |
 |---|---|---|
-| `DATABASE_URL` | SQLAlchemy connection string | `sqlite:///./agri_vision.db` |
-| `MODEL_PATH` | Supplied crop-model file or directory | `./models/crop_model.pt` |
-| `MODEL_TYPE` | `pytorch` or `keras` | `pytorch` |
-| `CLASS_NAMES_PATH` | Ordered model output labels | `./ml/class_names.json` |
-| `USE_MOCK_MODEL` | Use deterministic demonstration inference | `true` |
-| `IMAGE_SIZE` | Model input height/width | `224` |
-| `MAX_UPLOAD_MB` | Backend upload limit | `8` |
-| `SECRET_KEY` | JWT signing key; change outside local demo | development value |
-| `API_BASE_URL` | URL used by Streamlit | `http://localhost:8000` |
-| `CORS_ORIGINS` | Comma-separated allowed browser origins | `http://localhost:8501` |
-| `NVIDIA_API_KEY` | NVIDIA API Catalog key (optional for unauthenticated self-hosted NIM) | empty |
-| `NVIDIA_NIM_BASE_URL` | Hosted or self-hosted NIM `/v1` endpoint | `https://integrate.api.nvidia.com/v1` |
-| `NVIDIA_NIM_MODEL` | NIM planning model | `nvidia/nemotron-3-nano-30b-a3b` |
+| `DATABASE_URL` | SQLAlchemy database connection | `sqlite:///./agri_vision.db` |
+| `SECRET_KEY` | JWT signing key | Development value; replace before deployment |
+| `API_BASE_URL` | Backend URL used by Streamlit | `http://localhost:8000` |
+| `CORS_ORIGINS` | Comma-separated browser origins | `http://localhost:8501` |
+| `MODEL_PATH` | Crop model artifact | `./models/crop_model.pt` |
+| `MODEL_TYPE` | `pytorch`, `mobilenetv3`, or `keras` | `pytorch` |
+| `CLASS_NAMES_PATH` | Labels in exact output-index order | `./ml/class_names.json` |
+| `USE_MOCK_MODEL` | Enable deterministic demo inference | `true` |
+| `IMAGE_SIZE` | Model input height and width | `224` |
+| `MAX_UPLOAD_MB` | Maximum accepted image size | `8` |
+| `OOD_CONFIDENCE_THRESHOLD` | Reject low-confidence real-model input | `0.45` |
+| `OOD_ENTROPY_THRESHOLD` | Reject uncertain real-model distributions | `2.5` |
+| `NVIDIA_API_KEY` | Hosted NVIDIA NIM credential | Empty by default |
+| `NVIDIA_NIM_BASE_URL` | Hosted or self-hosted OpenAI-compatible `/v1` endpoint | `https://integrate.api.nvidia.com/v1` |
+| `NVIDIA_NIM_MODEL` | Configurable planner model | `google/gemma-4-31b-it` in the sample file |
 | `NVIDIA_NIM_MAX_TOKENS` | Maximum planner completion tokens | `768` |
-| `AGENT_MAX_STEPS` | Maximum planner iterations per query | `8` |
+| `AGENT_MAX_STEPS` | Maximum tool/planner iterations per request | `8` |
 | `AGENT_TIMEOUT_SECONDS` | Internal agent API timeout | `180` |
 
-## Supplied model integration
+To use a self-hosted NIM, change `NVIDIA_NIM_BASE_URL` to its OpenAI-compatible `/v1` endpoint. `NVIDIA_API_KEY` may remain empty if that endpoint does not require authentication.
 
-1. Place the artifact at `models/crop_model.pt` or set `MODEL_PATH` to its location.
-2. Put labels in `ml/class_names.json` in exact output-index order.
-3. Add or alias those labels in `knowledge/crop_diseases.json`.
-4. Install the model framework separately (PyTorch is deliberately not a large core dependency).
-5. Set `USE_MOCK_MODEL=false` and the correct `MODEL_TYPE`.
-6. Restart the application and confirm `/health` reports `model_loaded: true` and `mock_mode: false`.
+## Connecting a real crop model
 
-Detailed artifact formats, preprocessing assumptions, state-dict handling, and Hugging Face extension guidance are in [ml/README_MODEL.md](ml/README_MODEL.md).
+The repository runs in deterministic demo mode until a model artifact is supplied.
 
-The default preprocessing resizes to `IMAGE_SIZE` and scales RGB pixels to `[0,1]`; it does not guess training normalization. Match the supplied model's documented preprocessing before real use.
+1. Put the artifact at `models/crop_model.pt`, or update `MODEL_PATH`.
+2. Keep [`ml/class_names.json`](ml/class_names.json) in the exact order of the model outputs.
+3. Ensure every label maps to an entry or alias in [`knowledge/crop_diseases.json`](knowledge/crop_diseases.json).
+4. Select the appropriate adapter:
+   - `MODEL_TYPE=mobilenetv3` for the supported 38-class MobileNetV3-Large state dictionary.
+   - `MODEL_TYPE=pytorch` for TorchScript or a serialized `nn.Module`.
+   - `MODEL_TYPE=keras` for a Keras artifact; install a compatible TensorFlow package separately.
+5. Match the preprocessing to the model's training pipeline. The MobileNetV3 adapter applies ImageNet normalization; the generic adapters scale RGB values to `[0, 1]`.
+6. Set `USE_MOCK_MODEL=false`, restart, and confirm `/health` reports `model_loaded: true` and `mock_mode: false`.
 
-## Hackathon demo flow
-
-1. Sign in with the demo account and show the dashboard: 3 crops, 7 animals, and 2 active alerts.
-2. Open **Check Crop**, select Green Valley Farm and Tomato, and upload any valid leaf JPG/PNG.
-3. Demo mode returns Tomato Early Blight at 94.6% confidence with moderate severity.
-4. Show immediate actions, prevention, urgency, and expert-escalation advice.
-5. Save it, then open **Diagnosis History** to prove persistence.
-6. Open **Animals & Health** and choose Lakshmi (`COW-101`).
-7. In Health Observations enter 40.2 °C, Low appetite, and Low activity.
-8. Save to produce score 7, High risk, veterinary guidance, and a new critical dashboard alert.
+If the configured artifact is missing, the application deliberately falls back to the demo adapter so a presentation does not fail at startup.
 
 ## API overview
 
-| Area | Endpoints |
+| Area | Main endpoints |
 |---|---|
 | System | `GET /health` |
 | Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
 | Farms | `GET/POST /farms`, `GET/PUT/PATCH/DELETE /farms/{id}` |
 | Crops | `GET/POST /crops`, `GET/PATCH/DELETE /crops/{id}` |
-| Diagnosis | `POST /diagnosis/predict`, `POST /diagnosis/save`, `GET /diagnosis/history`, `GET /diagnosis/{id}` |
+| Crop diagnosis | `POST /diagnosis/predict`, `POST /diagnosis/save`, `GET /diagnosis/history` |
 | Livestock | `GET/POST /livestock`, `GET/PUT/PATCH/DELETE /livestock/{id}` |
-| Animal care | observation, history, medical-record, and vaccination routes under `/livestock/{id}` |
+| Animal care | Observation, history, medical-record, and vaccination routes under `/livestock/{id}` |
 | Alerts | `GET /alerts`, `PATCH /alerts/{id}/read` |
 | Dashboard | `GET /dashboard/summary` |
-| Agentic AI | `GET /agent/status`, `POST /agent/query`, `POST /agent/query-with-image` |
+| AI assistant | `GET /agent/status`, `POST /agent/query`, `POST /agent/query-with-image` |
 
-Every farmer-data endpoint requires `Authorization: Bearer <token>`.
+Farmer-data endpoints require `Authorization: Bearer <token>`. FastAPI exposes complete request/response schemas at `/docs`.
 
-## Folder structure
+## Project structure
 
 ```text
-backend/             FastAPI routes, configuration, ORM models, schemas, services
-backend/agent/       LangGraph planner, NVIDIA NIM integration, and authenticated API tools
-frontend/            Streamlit app, farmer pages, shared UI, API client, translations
-knowledge/           Crop advice, animal rules, and vaccination schedules
-ml/                  Framework adapters, preprocessing, normalized inference contract
-data/uploads/        Validated and compressed local images (gitignored)
-scripts/             Idempotent demo database seeding
-tests/               Unit and end-to-end API tests
-models/              Supplied model location (artifacts gitignored)
-run.py                One-command local launcher
+.
+├── backend/
+│   ├── agent/          # LangGraph planner and authenticated API tools
+│   ├── api/            # FastAPI route modules
+│   ├── core/           # Settings and security
+│   ├── db/             # SQLAlchemy session and initialization
+│   ├── models/         # Persistent entities and relationships
+│   ├── schemas/        # Pydantic request/response contracts
+│   └── services/       # Crop, advisory, alert, livestock, and vaccine logic
+├── frontend/
+│   ├── components/     # Reusable Streamlit UI components
+│   ├── i18n/           # English, Hindi, and Tamil translations
+│   ├── pages/          # Dashboard and workflow pages
+│   └── utils/          # API client and shared helpers
+├── knowledge/          # Versioned crop, livestock, and vaccination rules
+├── ml/                 # Preprocessing and swappable model adapters
+├── models/             # Local model artifacts (ignored by Git)
+├── data/uploads/       # Validated crop images (ignored by Git)
+├── scripts/            # Idempotent demo-data setup
+├── tests/              # Unit, API, security, agent, and workflow tests
+├── .env.example        # Safe configuration template
+├── requirements.txt    # Python dependencies
+└── run.py              # One-command local launcher
 ```
 
-## Tests
+## Testing
+
+Run the full test suite:
 
 ```bash
 python -m pytest -q
 ```
 
-Tests cover password-based authentication, API health, end-to-end crop prediction and persistence, adapter normalization, advisory mapping, low-confidence escalation, livestock score 7/high-risk behavior, vaccination due-date windows, and alert generation.
+Current result:
 
-## Offline and safety behavior
+```text
+40 passed
+```
 
-- Core workflows use only the local database, local rules, and local inference.
-- Uploaded files are extension checked, decoded as images, renamed with random identifiers, bounded to 8 MB, compressed, and never executed.
-- Low-confidence crop results explicitly request expert verification.
-- Chemical advice never provides hazardous dosing and directs farmers to approved labels or officers.
-- Animal output is preliminary screening and clearly does not claim a veterinary diagnosis.
-- User-facing errors avoid stack traces; server logs retain diagnostic detail.
+Coverage includes authentication, ownership boundaries, farm/crop/animal mutations, confirmed deletion and cascading cleanup, crop prediction and persistence, advisory mapping, low-confidence behavior, livestock risk scoring, vaccination windows, alert creation, NIM localization, agent tool validation, duplicate-write prevention, and bearer-token propagation.
 
-## Screenshots
+## Responsible and secure design
 
-Add final presentation captures here after running on the target display:
+- Crop and livestock results are explicitly preliminary decision support.
+- Low-confidence or unrecognized crop images are escalated for expert verification.
+- Livestock guidance does not claim a diagnosis or invent medication dosages.
+- High-risk animal observations recommend prompt contact with a qualified veterinarian.
+- Chemical advice avoids unsafe dosing and points users to approved labels or local officers.
+- Passwords are bcrypt-hashed and farmer records are isolated through API ownership checks.
+- Uploaded files are extension-checked, decoded as images, size-limited, renamed, compressed, and never executed.
+- The assistant can mutate records only after explicit user intent; destructive actions require exact record confirmation.
+- User-facing API errors avoid exposing stack traces.
 
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/crop-analysis.png`
-- `docs/screenshots/animal-health.png`
+## What makes AgriVision AI different
 
-## Future improvements
+- **Unified:** crop health, livestock care, records, analytics, and alerts share one data model and interface.
+- **Explainable:** advisory rules, livestock scores, tool traces, and confidence thresholds are inspectable.
+- **Model-agnostic:** adapters let teams replace the demo model without rewriting the API or UI.
+- **Local-first:** essential farm workflows continue without a cloud database or always-on AI service.
+- **Action-oriented:** results become saved records, reminders, alerts, and follow-up tasks instead of isolated predictions.
+- **Safety-aware:** OOD checks, confidence escalation, authorization boundaries, and guarded writes are built into the workflow.
 
-- Connect the supplied, validated crop model and its exact preprocessing
-- Add voice guidance and expand Tamil domain translations
-- PostgreSQL migrations with Alembic for multi-device deployment
-- Background vaccination-alert refresh and optional SMS delivery
-- Role-based agricultural/veterinary expert review
-- Grad-CAM overlays for compatible vision architectures
-- PWA/offline capture synchronization if a web client is later added
+## Roadmap
+
+- Validate the production crop model on field imagery and tune OOD thresholds
+- Add Grad-CAM explanations for compatible vision architectures
+- Expand complete Tamil domain translations and add voice-guided interaction
+- Add PostgreSQL migrations and multi-device synchronization
+- Deliver opt-in SMS/WhatsApp vaccination and critical-health alerts
+- Add expert review queues for agricultural officers and veterinarians
+- Package the farmer experience as an offline-capable progressive web app
+
+---
+
+**AgriVision AI turns farm observations into organized records, explainable guidance, and timely action — from one application.**
