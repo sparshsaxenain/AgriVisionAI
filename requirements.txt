@@ -19,4 +19,4 @@ torchvision>=0.15
 
 langchain>=1.0,<2
 langgraph>=1.0,<2
-langchain-ollama>=1.0,<2
+langchain-nvidia-ai-endpoints>=1.0,<2

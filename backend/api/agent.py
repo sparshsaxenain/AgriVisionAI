@@ -1,11 +1,11 @@
-"""Natural-language agent API backed by LangGraph and local Ollama."""
+"""Natural-language agent API backed by LangGraph and NVIDIA NIM."""
 from __future__ import annotations
 
 import logging
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials
@@ -30,6 +30,7 @@ router = APIRouter(prefix="/agent", tags=["Agentic AI"])
 class AgentQuery(BaseModel):
     query: str = Field(min_length=2, max_length=2000)
     thread_id: str | None = Field(default=None, min_length=1, max_length=80, pattern=r"^[A-Za-z0-9_-]+$")
+    language: Literal["en", "hi", "ta"] = "en"
 
 
 class AgentResponse(BaseModel):
@@ -52,11 +53,12 @@ def _wants_saved_diagnosis(query: str) -> bool:
         r"\b(?:do\s+not|don't|dont|not\s+to)\s+(?:save|add|record|log|store)\b"
         r"|\bwithout\s+(?:saving|adding|recording|logging|storing)\b",
         text,
-    ):
+    ) or re.search(r"(?:मत|नहीं)\s*(?:सहेज|सेव|दर्ज|रिकॉर्ड|जो[ड़ड़])|(?:सहेज|सेव|दर्ज|रिकॉर्ड|जो[ड़ड़])\s*मत", text):
         return False
     return bool(
         re.search(r"\b(?:save|record|log|store)\b", text)
         or re.search(r"\badd\s+(?:it|this|the\s+(?:diagnosis|analysis|result)|(?:diagnosis|analysis|result))\b", text)
+        or re.search(r"(?:सहेज|सेव|दर्ज|रिकॉर्ड|जो[ड़ड़])", text)
     )
 
 
@@ -126,12 +128,18 @@ def query_agent(
     if credentials is None:  # current_user normally handles this; keeps typing explicit.
         raise HTTPException(401, "Please sign in.")
     try:
-        result = service.run(payload.query, credentials.credentials, user.id, payload.thread_id)
+        result = service.run(
+            payload.query,
+            credentials.credentials,
+            user.id,
+            payload.thread_id,
+            response_language=payload.language,
+        )
     except Exception:
         logger.exception("Agent run failed for user=%s", user.id)
         raise HTTPException(
             503,
-            f"The local AI agent is unavailable. Start Ollama and run: ollama pull {service.settings.ollama_model}",
+            "The NVIDIA NIM agent is unavailable. Check NVIDIA_API_KEY, NVIDIA_NIM_BASE_URL, and NVIDIA_NIM_MODEL.",
         )
     return AgentResponse(
         answer=result.answer,
@@ -148,6 +156,7 @@ async def query_agent_with_image(
     crop_id: int | None = Form(default=None),
     image: UploadFile = File(...),
     thread_id: str | None = Form(default=None, min_length=1, max_length=80, pattern=r"^[A-Za-z0-9_-]+$"),
+    language: Literal["en", "hi", "ta"] = Form(default="en"),
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
     user: User = Depends(current_user),
     db: Session = Depends(get_db),
@@ -193,6 +202,7 @@ async def query_agent_with_image(
             user.id,
             thread_id,
             verified_context,
+            language,
         )
     except Exception:
         logger.exception("Image-assisted agent run failed for user=%s", user.id)
@@ -201,10 +211,19 @@ async def query_agent_with_image(
             (get_settings().uploads_dir / token).unlink(missing_ok=True)
         raise HTTPException(
             503,
-            f"The image was analyzed, but the local AI agent is unavailable. Start Ollama and run: ollama pull {service.settings.ollama_model}",
+            "The image was analyzed, but the NVIDIA NIM agent is unavailable. Check the NVIDIA NIM configuration.",
         )
     saved_diagnosis_id = None
+    if language == "hi":
+        try:
+            analysis.localized = await run_in_threadpool(service.localize_diagnosis, analysis, language)
+        except Exception:
+            logger.exception("Hindi image-analysis localization failed for user=%s", user.id)
     if save_requested and resolved_farm_id is not None and resolved_crop_id is not None:
+        advisory_to_save = dict(analysis.advisory)
+        if analysis.localized:
+            advisory_to_save["_localizations"] = {language: analysis.localized["advisory"]}
+            advisory_to_save["_display_names"] = {language: analysis.localized["display_name"]}
         diagnosis = persist_diagnosis(
             DiagnosisSave(
                 farm_id=resolved_farm_id,
@@ -214,7 +233,7 @@ async def query_agent_with_image(
                 display_name=analysis.display_name,
                 confidence=analysis.confidence,
                 severity=analysis.severity,
-                advisory=analysis.advisory,
+                advisory=advisory_to_save,
                 model_version=analysis.model_version,
             ),
             db,

@@ -7,24 +7,38 @@ from pydantic import ValidationError
 
 from backend.agent.api_client import AgentAPIClient
 from backend.api.agent import _wants_saved_diagnosis
-from backend.agent.graph import AgentContext, AgentDecision, AgentRunResult, AgentService
+from backend.agent.graph import (
+    AgentContext,
+    AgentDecision,
+    AgentRunResult,
+    AgentService,
+    DiagnosisLocalization,
+)
 from backend.agent.tools import TOOLS_BY_NAME
 from backend.core.config import Settings
 
 
 class FakeAgentService:
-    settings = SimpleNamespace(ollama_model="gemma3:4b")
+    settings = SimpleNamespace(nvidia_nim_model="nvidia/nemotron-3-nano-30b-a3b")
 
     def status(self):
-        return {"reachable": True, "model": "gemma3:4b", "model_installed": True, "installed_models": ["gemma3:4b"]}
+        return {
+            "provider": "NVIDIA NIM",
+            "configured": True,
+            "reachable": True,
+            "model": "nvidia/nemotron-3-nano-30b-a3b",
+            "model_available": True,
+            "available_models": ["nvidia/nemotron-3-nano-30b-a3b"],
+        }
 
-    def run(self, query, token, user_id, thread_id=None, verified_context=""):
+    def run(self, query, token, user_id, thread_id=None, verified_context="", response_language="en"):
         assert token
         assert user_id > 0
+        assert response_language in {"en", "hi", "ta"}
         return AgentRunResult(
             answer="The crop image was analyzed." if verified_context else "You have one farm.",
             thread_id=thread_id or "generated-thread",
-            model="gemma3:4b",
+            model="nvidia/nemotron-3-nano-30b-a3b",
             tool_calls=[{"tool": "get_dashboard", "status": "success"}],
         )
 
@@ -37,6 +51,8 @@ class FakeAgentService:
         ("Analyze and save this result", True),
         ("Check this image and add it", True),
         ("Please record the diagnosis", True),
+        ("इस जाँच को रिकॉर्ड करें", True),
+        ("इस नतीजे को सेव मत करें", False),
     ],
 )
 def test_image_save_intent_is_explicit(query, expected):
@@ -62,7 +78,7 @@ def test_agent_query_uses_authenticated_service(client, auth_headers):
     assert response.json() == {
         "answer": "You have one farm.",
         "thread_id": "test-thread",
-        "model": "gemma3:4b",
+        "model": "nvidia/nemotron-3-nano-30b-a3b",
         "tool_calls": [{"tool": "get_dashboard", "status": "success"}],
     }
 
@@ -152,6 +168,49 @@ def test_agent_image_save_request_requires_unambiguous_crop(client, auth_headers
 
     assert response.status_code == 400
     assert "Mention the farm and crop" in response.json()["detail"]
+
+
+def test_nvidia_nim_localizes_crop_result_without_changing_source_fields():
+    service = AgentService(Settings(nvidia_nim_api_key="nvapi-test"))
+
+    class Localizer:
+        def invoke(self, messages):
+            assert "Hindi" in messages[0].content
+            assert "Tomato Early Blight" in messages[1].content
+            return DiagnosisLocalization.model_validate(
+                {
+                    "display_name": "टमाटर अर्ली ब्लाइट",
+                    "confidence_label": "उच्च विश्वसनीयता",
+                    "top_prediction_names": ["टमाटर अर्ली ब्लाइट"],
+                    "advisory": {
+                        "description": "टमाटर का एक फफूंदजनित रोग।",
+                        "recommended_actions": ["प्रभावित पत्तियाँ हटाएँ।"],
+                        "preventive_measures": ["फसल चक्र अपनाएँ।"],
+                        "when_to_contact_expert": "रोग फैलने पर विशेषज्ञ से संपर्क करें।",
+                        "urgency": "24 घंटे के भीतर कार्रवाई करें।",
+                        "safety_note": "यह प्रारंभिक सलाह है।",
+                    },
+                }
+            )
+
+    source = {
+        "display_name": "Tomato Early Blight",
+        "confidence_label": "High confidence",
+        "top_predictions": [{"display_name": "Tomato Early Blight"}],
+        "advisory": {
+            "description": "A fungal disease of tomato.",
+            "recommended_actions": ["Remove affected leaves."],
+            "preventive_measures": ["Rotate crops."],
+            "when_to_contact_expert": "Contact an expert if it spreads.",
+            "urgency": "Act within 24 hours.",
+            "safety_note": "This is preliminary guidance.",
+        },
+    }
+    service.diagnosis_localizer = Localizer()
+    localized = service.localize_diagnosis(source, "hi")
+
+    assert localized["display_name"] == "टमाटर अर्ली ब्लाइट"
+    assert source["display_name"] == "Tomato Early Blight"
 
 
 def test_agent_api_client_passes_bearer_token():

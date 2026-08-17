@@ -147,6 +147,7 @@ class DiagnosisPreview(BaseModel):
     mock_mode: bool = False
     is_ood: bool = False
     ood_reason: str = ""
+    localized: dict[str, Any] | None = None
 
 
 class DiagnosisSave(BaseModel):

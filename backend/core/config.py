@@ -28,8 +28,12 @@ class Settings:
     use_mock_model: bool = _boolean("USE_MOCK_MODEL", True)
     image_size: int = int(os.getenv("IMAGE_SIZE", "224"))
     max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "8"))
-    ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-    ollama_model: str = os.getenv("OLLAMA_MODEL", "gemma3:4b")
+    nvidia_nim_base_url: str = os.getenv(
+        "NVIDIA_NIM_BASE_URL", "https://integrate.api.nvidia.com/v1"
+    ).rstrip("/")
+    nvidia_nim_api_key: str = os.getenv("NVIDIA_API_KEY", "").strip()
+    nvidia_nim_model: str = os.getenv("NVIDIA_NIM_MODEL", "nvidia/nemotron-3-nano-30b-a3b")
+    nvidia_nim_max_tokens: int = int(os.getenv("NVIDIA_NIM_MAX_TOKENS", "768"))
     agent_max_steps: int = int(os.getenv("AGENT_MAX_STEPS", "8"))
     agent_timeout_seconds: int = int(os.getenv("AGENT_TIMEOUT_SECONDS", "180"))
     agent_context_window: int = int(os.getenv("AGENT_CONTEXT_WINDOW", "8192"))
