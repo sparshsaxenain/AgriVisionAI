@@ -96,7 +96,11 @@ def update_animal(animal_id: int, payload: LivestockCreate, db: Session = Depend
         raise HTTPException(404, "Farm not found.")
     for key, value in payload.model_dump().items():
         setattr(animal, key, value)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "That animal tag is already in use.")
     db.refresh(animal)
     return animal
 

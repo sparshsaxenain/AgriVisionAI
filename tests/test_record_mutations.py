@@ -49,6 +49,29 @@ def test_animal_patch_and_confirmed_delete(client, auth_headers):
     assert client.get("/livestock", headers=auth_headers).json() == []
 
 
+def test_animal_put_rejects_duplicate_tag_id(client, auth_headers):
+    farm = client.post("/farms", headers=auth_headers, json={"farm_name": "Tag Farm"}).json()
+    first = client.post(
+        "/livestock",
+        headers=auth_headers,
+        json={"farm_id": farm["id"], "animal_type": "Cow", "tag_id": "COW-01"},
+    ).json()
+    second = client.post(
+        "/livestock",
+        headers=auth_headers,
+        json={"farm_id": farm["id"], "animal_type": "Cow", "tag_id": "COW-02"},
+    ).json()
+
+    response = client.put(
+        f"/livestock/{second['id']}",
+        headers=auth_headers,
+        json={"farm_id": farm["id"], "animal_type": "Cow", "tag_id": first["tag_id"]},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "That animal tag is already in use."
+
+
 def test_confirmed_farm_delete_cascades_crops_and_livestock(client, auth_headers):
     farm = client.post("/farms", headers=auth_headers, json={"farm_name": "Temporary Farm"}).json()
     client.post("/crops", headers=auth_headers, json={"farm_id": farm["id"], "crop_name": "Tomato"})
